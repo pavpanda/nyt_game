@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { ArrowLeftRight } from 'lucide-react';
 import { DragType } from '../types/number-grid.types';
-import { moveRow, moveColumn, DEFAULT_GRID } from '../utils/grid-utils';
 
 interface HandleProps {
   index: number;
@@ -12,6 +11,9 @@ interface HandleProps {
   onDragEnd: () => void;
   onDragOver: (e: React.DragEvent, index: number) => void;
   onDrop: (e: React.DragEvent, index: number) => void;
+  onTouchStart: (e: React.TouchEvent, index: number, type: DragType) => void;
+  onTouchMove: (e: React.TouchEvent, index: number) => void;
+  onTouchEnd: (e: React.TouchEvent) => void;
   onFlip: (index: number, type: DragType) => void;
 }
 
@@ -24,6 +26,9 @@ const GridHandle: React.FC<HandleProps> = ({
   onDragEnd,
   onDragOver,
   onDrop,
+  onTouchStart,
+  onTouchMove,
+  onTouchEnd,
   onFlip,
 }) => {
   const isColumn = type === 'col';
@@ -36,7 +41,10 @@ const GridHandle: React.FC<HandleProps> = ({
         onDragEnd={onDragEnd}
         onDragOver={(e) => dragType === type && onDragOver(e, index)}
         onDrop={(e) => onDrop(e, index)}
-        className={`w-12 h-12 flex items-center justify-center cursor-move
+        onTouchStart={(e) => onTouchStart(e, index, type)}
+        onTouchMove={(e) => dragType === type && onTouchMove(e, index)}
+        onTouchEnd={onTouchEnd}
+        className={`w-12 h-12 flex items-center justify-center cursor-move touch-none
           ${dragType === type && dropIndex === index ? 'bg-blue-100' : 'hover:bg-gray-50'}`}
       >
         <div className={`${isColumn ? 'w-1 h-4' : 'h-1 w-4'} rounded-full bg-gray-300`} />
@@ -54,7 +62,7 @@ const GridHandle: React.FC<HandleProps> = ({
   );
 };
 
-export const ColumnHandles: React.FC<{
+interface ColumnHandlesProps {
   columnCount: number;
   dragType: DragType;
   dropIndex: number | null;
@@ -62,8 +70,16 @@ export const ColumnHandles: React.FC<{
   onDragEnd: HandleProps['onDragEnd'];
   onDragOver: HandleProps['onDragOver'];
   onDrop: HandleProps['onDrop'];
+  onTouchStart: HandleProps['onTouchStart'];
+  onTouchMove: HandleProps['onTouchMove'];
+  onTouchEnd: HandleProps['onTouchEnd'];
   onFlip: HandleProps['onFlip'];
-}> = ({ columnCount, ...props }) => (
+}
+
+export const ColumnHandles: React.FC<ColumnHandlesProps> = ({ 
+  columnCount, 
+  ...props 
+}) => (
   <div className="flex ml-20"> {/* Aligned with grid content */}
     {Array.from({ length: columnCount }).map((_, index) => (
       <div key={`col-${index}`} className="flex flex-col">
@@ -77,7 +93,7 @@ export const ColumnHandles: React.FC<{
   </div>
 );
 
-export const RowHandles: React.FC<{
+interface RowHandlesProps {
   rowCount: number;
   dragType: DragType;
   dropIndex: number | null;
@@ -85,8 +101,16 @@ export const RowHandles: React.FC<{
   onDragEnd: HandleProps['onDragEnd'];
   onDragOver: HandleProps['onDragOver'];
   onDrop: HandleProps['onDrop'];
+  onTouchStart: HandleProps['onTouchStart'];
+  onTouchMove: HandleProps['onTouchMove'];
+  onTouchEnd: HandleProps['onTouchEnd'];
   onFlip: HandleProps['onFlip'];
-}> = ({ rowCount, ...props }) => (
+}
+
+export const RowHandles: React.FC<RowHandlesProps> = ({ 
+  rowCount, 
+  ...props 
+}) => (
   <div className="flex flex-col">
     {Array.from({ length: rowCount }).map((_, index) => (
       <GridHandle
@@ -98,3 +122,5 @@ export const RowHandles: React.FC<{
     ))}
   </div>
 );
+
+export type { HandleProps, ColumnHandlesProps, RowHandlesProps };

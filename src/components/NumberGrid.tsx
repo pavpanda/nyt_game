@@ -52,6 +52,8 @@ const NumberGrid: React.FC<{ initialGrid?: number[][] }> = ({ initialGrid = DEFA
   const [dropIndex, setDropIndex] = useState<number | null>(null);
   const [previewGrid, setPreviewGrid] = useState<number[][]>(grid);
   const [moveCount, setMoveCount] = useState(0);
+  const [touchStartY, setTouchStartY] = useState<number | null>(null);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
   useEffect(() => {
     if (dragIndex === null || dropIndex === null || dragType === null) {
@@ -82,6 +84,11 @@ const NumberGrid: React.FC<{ initialGrid?: number[][] }> = ({ initialGrid = DEFA
     e.dataTransfer.setDragImage(img, 0, 0);
   };
 
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    setDropIndex(index);
+  };
+
   const handleDrop = (e: React.DragEvent, dropIndex: number) => {
     e.preventDefault();
     if (dragIndex === null || dragType === null || dragIndex === dropIndex) return;
@@ -95,15 +102,61 @@ const NumberGrid: React.FC<{ initialGrid?: number[][] }> = ({ initialGrid = DEFA
     handleDragEnd();
   };
 
-  const handleDragOver = (e: React.DragEvent, index: number) => {
-    e.preventDefault();
-    setDropIndex(index);
-  };
-
   const handleDragEnd = () => {
     setDragIndex(null);
     setDragType(null);
     setDropIndex(null);
+  };
+
+  const handleTouchStart = (
+    e: React.TouchEvent,
+    index: number,
+    type: DragType
+  ) => {
+    e.preventDefault(); // Prevent scrolling while dragging
+    const touch = e.touches[0];
+    setTouchStartY(touch.clientY);
+    setTouchStartX(touch.clientX);
+    setDragType(type);
+    setDragIndex(index);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent, currentIndex: number) => {
+    e.preventDefault();
+    if (dragIndex === null || dragType === null) return;
+
+    const touch = e.touches[0];
+    const deltaY = touch.clientY - (touchStartY ?? 0);
+    const deltaX = touch.clientX - (touchStartX ?? 0);
+    
+    // Calculate the potential new position based on touch movement
+    const handleSize = 48; // 12 * 4 (w-12 or h-12 from the CSS)
+    const movement = dragType === 'row' ? deltaY : deltaX;
+    const potentialPosition = Math.round(movement / handleSize) + dragIndex;
+    
+    // Clamp the position to valid grid indices
+    const maxIndex = dragType === 'row' ? grid.length - 1 : grid[0].length - 1;
+    const newPosition = Math.max(0, Math.min(potentialPosition, maxIndex));
+    
+    setDropIndex(newPosition);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    e.preventDefault();
+    if (dragIndex !== null && dropIndex !== null && dragType !== null) {
+      const newGrid = dragType === 'row'
+        ? moveRow(grid, dragIndex, dropIndex)
+        : moveColumn(grid, dragIndex, dropIndex);
+      
+      setGrid(newGrid);
+      setMoveCount(prevCount => prevCount + 1);
+    }
+    
+    setDragIndex(null);
+    setDragType(null);
+    setDropIndex(null);
+    setTouchStartY(null);
+    setTouchStartX(null);
   };
 
   const handleFlip = (index: number, type: DragType) => {
@@ -127,6 +180,19 @@ const NumberGrid: React.FC<{ initialGrid?: number[][] }> = ({ initialGrid = DEFA
     setMoveCount(0);
   };
 
+  const handleProps = {
+    dragType,
+    dropIndex,
+    onDragStart: handleDragStart,
+    onDragEnd: handleDragEnd,
+    onDragOver: handleDragOver,
+    onDrop: handleDrop,
+    onTouchStart: handleTouchStart,
+    onTouchMove: handleTouchMove,
+    onTouchEnd: handleTouchEnd,
+    onFlip: handleFlip,
+  };
+
   return (
     <div className="flex flex-col items-center gap-6 p-8">
       <h1 className="text-6xl font-bold">Flip</h1>
@@ -136,26 +202,14 @@ const NumberGrid: React.FC<{ initialGrid?: number[][] }> = ({ initialGrid = DEFA
         <div className="h-20">
           <ColumnHandles
             columnCount={grid[0].length}
-            dragType={dragType}
-            dropIndex={dropIndex}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-            onFlip={handleFlip}
+            {...handleProps}
           />
         </div>
 
         <div className="flex">
           <RowHandles
             rowCount={grid.length}
-            dragType={dragType}
-            dropIndex={dropIndex}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-            onFlip={handleFlip}
+            {...handleProps}
           />
 
           <div className="grid grid-cols-4 gap-px bg-gray-200 p-px">
