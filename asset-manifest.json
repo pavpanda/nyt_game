@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/nyt_game/static/css/main.88e64a00.css",
-    "main.js": "/nyt_game/static/js/main.30da0c5c.js",
+    "main.css": "/nyt_game/static/css/main.ad782dbc.css",
+    "main.js": "/nyt_game/static/js/main.52cf4b3b.js",
     "static/js/453.e2dd4d66.chunk.js": "/nyt_game/static/js/453.e2dd4d66.chunk.js",
     "index.html": "/nyt_game/index.html",
-    "main.88e64a00.css.map": "/nyt_game/static/css/main.88e64a00.css.map",
-    "main.30da0c5c.js.map": "/nyt_game/static/js/main.30da0c5c.js.map",
+    "main.ad782dbc.css.map": "/nyt_game/static/css/main.ad782dbc.css.map",
+    "main.52cf4b3b.js.map": "/nyt_game/static/js/main.52cf4b3b.js.map",
     "453.e2dd4d66.chunk.js.map": "/nyt_game/static/js/453.e2dd4d66.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.88e64a00.css",
-    "static/js/main.30da0c5c.js"
+    "static/css/main.ad782dbc.css",
+    "static/js/main.52cf4b3b.js"
   ]
 }
