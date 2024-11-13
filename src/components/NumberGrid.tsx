@@ -1,16 +1,32 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ArrowLeftRight } from 'lucide-react';
+import HowToPlay from './HowToPlay'; // Make sure to adjust the import path
+
 
 type DragType = 'row' | 'col' | null;
 type Grid = number[][];
-type TouchInfo = {
+
+interface TouchDragState {
+  active: boolean;
   startX: number;
   startY: number;
   currentX: number;
   currentY: number;
-  index: number;
-  type: 'row' | 'col';
-} | null;
+  elementIndex: number;
+  dragType: DragType;
+  initialRect: DOMRect | null;
+}
+
+const initialTouchState: TouchDragState = {
+  active: false,
+  startX: 0,
+  startY: 0,
+  currentX: 0,
+  currentY: 0,
+  elementIndex: -1,
+  dragType: null,
+  initialRect: null,
+};
 
 const NUMBER_TO_LETTER: { [key: number]: string } = {
   1: 'b', 2: 'e', 3: 'a', 4: 'r',
@@ -68,6 +84,16 @@ const scrambleGrid = (grid: Grid): Grid => {
   return currentGrid;
 };
 
+// Helper function to get element position relative to its parent
+const getRelativePosition = (element: HTMLElement, parent: HTMLElement) => {
+  const parentRect = parent.getBoundingClientRect();
+  const elementRect = element.getBoundingClientRect();
+  return {
+    x: elementRect.left - parentRect.left,
+    y: elementRect.top - parentRect.top
+  };
+};
+
 interface CellProps {
   num: number;
   isFrozen: boolean;
@@ -83,69 +109,58 @@ const Cell: React.FC<CellProps> = ({ num, isFrozen, isHighlighted, isDragTarget 
       ${isHighlighted ? 'bg-blue-50 ring-2 ring-blue-200' : ''}
       ${isDragTarget ? 'ring-2 ring-blue-400' : ''}
       transition-all duration-150
+      select-none
     `}
   >
     {NUMBER_TO_LETTER[num]}
   </div>
 );
 
-
 interface DragHandleProps {
   index: number;
   type: 'row' | 'col';
-  dragType: DragType;
-  dropIndex: number | null;
+  isActive: boolean;
   isFrozen?: boolean;
-  onDragStart: (e: React.DragEvent<HTMLDivElement>, index: number, type: 'row' | 'col') => void;
-  onDragEnd: () => void;
-  onDragOver: (e: React.DragEvent<HTMLDivElement>, index: number) => void;
-  onDrop: (e: React.DragEvent<HTMLDivElement>, index: number) => void;
+  onTouchStart: (e: React.TouchEvent, index: number, type: 'row' | 'col') => void;
   onFlip: (index: number, type: 'row' | 'col') => void;
-  onTouchStart: (e: React.TouchEvent<HTMLDivElement>, index: number, type: 'row' | 'col') => void;
+  onMouseDown: (e: React.MouseEvent, index: number, type: 'row' | 'col') => void;
 }
 
 const DragHandle: React.FC<DragHandleProps> = ({
   index,
   type,
-  dragType,
-  dropIndex,
+  isActive,
   isFrozen = false,
-  onDragStart,
-  onDragEnd,
-  onDragOver,
-  onDrop,
-  onFlip,
   onTouchStart,
+  onFlip,
+  onMouseDown,
 }) => {
   const isColumn = type === 'col';
-  const isDragging = dragType === type && dropIndex === index;
   
   return (
     <div 
       className={`
         flex ${isColumn ? 'flex-col' : ''} items-center
         ${isColumn ? 'w-14 md:w-20' : 'h-14 md:h-20'} gap-1 md:gap-2
+        select-none
       `}
+      data-handle-type={type}
+      data-handle-index={index}
     >
       <div
-        draggable={!isFrozen}
-        onDragStart={(e) => onDragStart(e, index, type)}
-        onDragEnd={onDragEnd}
-        onDragOver={(e) => dragType === type && onDragOver(e, index)}
-        onDrop={(e) => onDrop(e, index)}
         onTouchStart={(e) => onTouchStart(e, index, type)}
+        onMouseDown={(e) => onMouseDown(e, index, type)} // Add this line
         className={`
           w-8 h-8 md:w-12 md:h-12 flex items-center justify-center
-          ${isFrozen ? 'opacity-30 cursor-not-allowed' : 'cursor-move hover:bg-gray-50 active:bg-gray-100'}
-          ${isDragging ? 'bg-blue-50' : ''}
+          ${isFrozen ? 'opacity-30' : 'active:bg-gray-100'}
+          ${isActive ? 'bg-blue-50' : ''}
           rounded-md transition-colors duration-150
         `}
       >
         <div 
           className={`
             ${isColumn ? 'w-0.5 h-3 md:h-4' : 'h-0.5 w-3 md:w-4'} 
-            ${isDragging ? 'bg-blue-400' : 'bg-gray-400'}
-            transition-colors duration-150
+            ${isActive ? 'bg-blue-400' : 'bg-gray-400'}
           `} 
         />
       </div>
@@ -154,7 +169,7 @@ const DragHandle: React.FC<DragHandleProps> = ({
         disabled={isFrozen}
         className={`
           w-8 h-8 md:w-12 md:h-12 flex items-center justify-center
-          ${isFrozen ? 'opacity-30 cursor-not-allowed' : 'hover:bg-gray-50 active:bg-gray-100'}
+          ${isFrozen ? 'opacity-30' : 'hover:bg-gray-50 active:bg-gray-100'}
           rounded-md transition-colors duration-150
         `}
       >
@@ -172,25 +187,266 @@ const DragHandle: React.FC<DragHandleProps> = ({
 
 const NumberGrid: React.FC = () => {
   const [grid, setGrid] = useState<Grid>(() => scrambleGrid(SOLUTION));
-  const [dragType, setDragType] = useState<DragType>(null);
-  const [dragIndex, setDragIndex] = useState<number | null>(null);
-  const [dropIndex, setDropIndex] = useState<number | null>(null);
   const [moveCount, setMoveCount] = useState<number>(0);
   const [frozenRows, setFrozenRows] = useState<Set<number>>(new Set());
-  const [touchInfo, setTouchInfo] = useState<TouchInfo>(null);
+  const [touchDrag, setTouchDrag] = useState<TouchDragState>(initialTouchState);
+  const [dropTarget, setDropTarget] = useState<number | null>(null);
+  const [showInstructions, setShowInstructions] = useState<boolean>(false);
 
-  const isRowCorrect = (row: number[], targetRow: number[]): boolean => {
-    const rowLetters = row.map(num => NUMBER_TO_LETTER[num]);
-    const targetLetters = targetRow.map(num => NUMBER_TO_LETTER[num]);
-    return rowLetters.join('') === targetLetters.join('');
-  };
+  const gridRef = useRef<HTMLDivElement>(null);
 
+  const handleTouchStart = useCallback((e: React.TouchEvent, index: number, type: DragType) => {
+    if (type === 'row' && frozenRows.has(index)) return;
+    
+    const touch = e.touches[0];
+    const element = e.currentTarget as HTMLElement;
+    
+    setTouchDrag({
+      active: true,
+      startX: touch.clientX,
+      startY: touch.clientY,
+      currentX: touch.clientX,
+      currentY: touch.clientY,
+      elementIndex: index,
+      dragType: type,
+      initialRect: element.getBoundingClientRect(),
+    });
+  }, [frozenRows]);
+
+  const handleMouseStart = useCallback((e: React.MouseEvent, index: number, type: DragType) => {
+    if (type === 'row' && frozenRows.has(index)) return;
+    
+    e.preventDefault();
+    
+    setTouchDrag({
+      active: true,
+      startX: e.clientX,
+      startY: e.clientY,
+      currentX: e.clientX,
+      currentY: e.clientY,
+      elementIndex: index,
+      dragType: type,
+      initialRect: (e.currentTarget as HTMLElement).getBoundingClientRect(),
+    });
+  }, [frozenRows]);
+
+  const handleTouchMove = useCallback((e: TouchEvent) => {
+    if (!touchDrag.active) return;
+    e.preventDefault();
+
+    const touch = e.touches[0];
+    
+    setTouchDrag(prev => ({
+      ...prev,
+      currentX: touch.clientX,
+      currentY: touch.clientY,
+    }));
+
+    // Find potential drop target
+    const handles = document.querySelectorAll(`[data-handle-type="${touchDrag.dragType}"]`);
+    let closestHandle: Element | null = null;
+    let minDistance = Infinity;
+
+    handles.forEach(handle => {
+      const rect = handle.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      
+      const distance = touchDrag.dragType === 'row'
+        ? Math.abs(touch.clientY - centerY)
+        : Math.abs(touch.clientX - centerX);
+        
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestHandle = handle;
+      }
+    });
+
+    if (closestHandle && minDistance < 30) {
+      const handleElement = closestHandle as HTMLElement;
+      const index = parseInt(handleElement.dataset.handleIndex ?? '-1', 10);
+      if (index !== touchDrag.elementIndex) {
+        setDropTarget(index);
+      }
+    } else {
+      setDropTarget(null);
+    }
+  }, [touchDrag]);
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!touchDrag.active) return;
+    e.preventDefault();
+  
+    setTouchDrag(prev => ({
+      ...prev,
+      currentX: e.clientX,
+      currentY: e.clientY,
+    }));
+  
+    // Find potential drop target
+    const handles = document.querySelectorAll(`[data-handle-type="${touchDrag.dragType}"]`);
+    let closestHandle: Element | null = null;
+    let minDistance = Infinity;
+  
+    handles.forEach(handle => {
+      const rect = handle.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      
+      const distance = touchDrag.dragType === 'row'
+        ? Math.abs(e.clientY - centerY)
+        : Math.abs(e.clientX - centerX);
+        
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestHandle = handle;
+      }
+    });
+  
+    if (closestHandle && minDistance < 30) {
+      const handleElement = closestHandle as HTMLElement;
+      const index = parseInt(handleElement.dataset.handleIndex ?? '-1', 10);
+      if (index !== touchDrag.elementIndex) {
+        setDropTarget(index);
+      }
+    } else {
+      setDropTarget(null);
+    }
+  }, [touchDrag]);
+
+  const handleTouchEnd = useCallback((e: TouchEvent) => {
+    e.preventDefault();
+    
+    if (!touchDrag.active || dropTarget === null) {
+      setTouchDrag(initialTouchState);
+      setDropTarget(null);
+      return;
+    }
+
+    const sourceIndex = touchDrag.elementIndex;
+    const targetIndex = dropTarget;
+
+    if (sourceIndex !== targetIndex) {
+      const newGrid = grid.map(row => [...row]);
+      
+      if (touchDrag.dragType === 'row') {
+        if (!frozenRows.has(sourceIndex) && !frozenRows.has(targetIndex)) {
+          // Swap rows
+          [newGrid[sourceIndex], newGrid[targetIndex]] = 
+            [newGrid[targetIndex], newGrid[sourceIndex]];
+          setGrid(newGrid);
+          setMoveCount(prev => prev + 1);
+        }
+      } else if (touchDrag.dragType === 'col') {
+        let hasUnfrozenMove = false;
+        // Swap columns only for unfrozen rows
+        for (let row = 0; row < newGrid.length; row++) {
+          if (!frozenRows.has(row)) {
+            [newGrid[row][sourceIndex], newGrid[row][targetIndex]] = 
+              [newGrid[row][targetIndex], newGrid[row][sourceIndex]];
+            hasUnfrozenMove = true;
+          }
+        }
+        if (hasUnfrozenMove) {
+          setGrid(newGrid);
+          setMoveCount(prev => prev + 1);
+        }
+      }
+    }
+
+    setTouchDrag(initialTouchState);
+    setDropTarget(null);
+  }, [touchDrag, dropTarget, grid, frozenRows]);
+
+  const handleMouseEnd = useCallback((e: MouseEvent) => {
+    e.preventDefault();
+    
+    if (!touchDrag.active || dropTarget === null) {
+      setTouchDrag(initialTouchState);
+      setDropTarget(null);
+      return;
+    }
+  
+    const sourceIndex = touchDrag.elementIndex;
+    const targetIndex = dropTarget;
+  
+    if (sourceIndex !== targetIndex) {
+      const newGrid = grid.map(row => [...row]);
+      
+      if (touchDrag.dragType === 'row') {
+        if (!frozenRows.has(sourceIndex) && !frozenRows.has(targetIndex)) {
+          // Swap rows
+          [newGrid[sourceIndex], newGrid[targetIndex]] = 
+            [newGrid[targetIndex], newGrid[sourceIndex]];
+          setGrid(newGrid);
+          setMoveCount(prev => prev + 1);
+        }
+      } else if (touchDrag.dragType === 'col') {
+        let hasUnfrozenMove = false;
+        // Swap columns only for unfrozen rows
+        for (let row = 0; row < newGrid.length; row++) {
+          if (!frozenRows.has(row)) {
+            [newGrid[row][sourceIndex], newGrid[row][targetIndex]] = 
+              [newGrid[row][targetIndex], newGrid[row][sourceIndex]];
+            hasUnfrozenMove = true;
+          }
+        }
+        if (hasUnfrozenMove) {
+          setGrid(newGrid);
+          setMoveCount(prev => prev + 1);
+        }
+      }
+    }
+  
+    setTouchDrag(initialTouchState);
+    setDropTarget(null);
+  }, [touchDrag, dropTarget, grid, frozenRows]);
+
+  const handleFlip = useCallback((index: number, type: 'row' | 'col') => {
+    if (type === 'row' && frozenRows.has(index)) return;
+
+    const newGrid = grid.map(row => [...row]);
+    
+    if (type === 'row') {
+      newGrid[index] = newGrid[index].reverse();
+    } else {
+      // For columns, only flip unfrozen rows
+      const unfrozenValues: number[] = [];
+      const frozenIndices = new Set();
+      
+      // Collect unfrozen values and mark frozen indices
+      for (let i = 0; i < grid.length; i++) {
+        if (frozenRows.has(i)) {
+          frozenIndices.add(i);
+        } else {
+          unfrozenValues.push(grid[i][index]);
+        }
+      }
+      
+      // Reverse unfrozen values
+      const reversedValues = unfrozenValues.reverse();
+      let unfrozenIndex = 0;
+      
+      // Place values back in grid
+      for (let i = 0; i < grid.length; i++) {
+        if (!frozenIndices.has(i)) {
+          newGrid[i][index] = reversedValues[unfrozenIndex++];
+        }
+      }
+    }
+    
+    setGrid(newGrid);
+    setMoveCount(prev => prev + 1);
+  }, [grid, frozenRows]);
+
+  // Check for completed rows
   useEffect(() => {
     setFrozenRows(prev => {
       const newFrozen = new Set(prev);
       
       grid.forEach((row, index) => {
-        if (isRowCorrect(row, SOLUTION[index])) {
+        const isCorrect = row.every((num, i) => num === SOLUTION[index][i]);
+        if (isCorrect) {
           newFrozen.add(index);
         } else {
           newFrozen.delete(index);
@@ -201,199 +457,50 @@ const NumberGrid: React.FC = () => {
     });
   }, [grid]);
 
-  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, index: number, type: 'row' | 'col') => {
-    if (type === 'row' && frozenRows.has(index)) {
-      e.preventDefault();
-      return;
-    }
-    setDragType(type);
-    setDragIndex(index);
-    
-    const img = new Image();
-    e.dataTransfer.setDragImage(img, 0, 0);
-  };
+  // Add touch event listeners
+  // Replace your existing useEffect that handles touch events with the following
 
-  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>, index: number, type: 'row' | 'col') => {
-    if (type === 'row' && frozenRows.has(index)) return;
-    
-    e.preventDefault(); // Prevent scrolling while dragging
-    const touch = e.touches[0];
-    setTouchInfo({
-      startX: touch.clientX,
-      startY: touch.clientY,
-      currentX: touch.clientX,
-      currentY: touch.clientY,
-      index,
-      type
-    });
-    
-    setDragType(type);
-    setDragIndex(index);
-  };
+useEffect(() => {
+  if (touchDrag.active) {
+    // Touch event listeners
+    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+    window.addEventListener('touchend', handleTouchEnd, { passive: false });
+    window.addEventListener('touchcancel', handleTouchEnd, { passive: false });
 
-  const findDropTarget = useCallback((x: number, y: number, type: 'row' | 'col') => {
-    const selector = type === 'row' ? '[data-row-handle]' : '[data-col-handle]';
-    const elements = document.querySelectorAll(selector);
-    
-    let closestIndex = null;
-    let minDistance = Infinity;
-    
-    elements.forEach((el, i) => {
-      const rect = el.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      
-      const distance = type === 'row'
-        ? Math.abs(y - centerY)
-        : Math.abs(x - centerX);
-      
-      if (distance < minDistance) {
-        minDistance = distance;
-        closestIndex = i;
-      }
-    });
-    
-    return closestIndex;
-  }, []);
+    // Mouse event listeners
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseEnd);
 
-  const handleTouchMove = useCallback((e: TouchEvent) => {
-    e.preventDefault(); // Prevent scrolling while dragging
-    
-    if (!touchInfo || !dragType) return;
+    return () => {
+      // Remove touch event listeners
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
+      window.removeEventListener('touchcancel', handleTouchEnd);
 
-    const touch = e.touches[0];
-    const newTouchInfo = {
-      ...touchInfo,
-      currentX: touch.clientX,
-      currentY: touch.clientY,
+      // Remove mouse event listeners
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseEnd);
     };
-    setTouchInfo(newTouchInfo);
-    
-    const dropTarget = findDropTarget(touch.clientX, touch.clientY, touchInfo.type);
-    if (dropTarget !== null && dropTarget !== touchInfo.index) {
-      setDropIndex(dropTarget);
-    }
-  }, [touchInfo, dragType, findDropTarget]);
+  }
+}, [touchDrag.active, handleTouchMove, handleTouchEnd, handleMouseMove, handleMouseEnd]);
 
-  const handleTouchEnd = useCallback((e: TouchEvent) => {
-    e.preventDefault();
-    
-    if (dragIndex !== null && dropIndex !== null && dragType !== null) {
-      const newGrid = grid.map(row => [...row]);
-      
-      if (dragType === 'row' && (!frozenRows.has(dragIndex) && !frozenRows.has(dropIndex))) {
-        const temp = [...newGrid[dragIndex]];
-        newGrid[dragIndex] = [...newGrid[dropIndex]];
-        newGrid[dropIndex] = temp;
-        setGrid(newGrid);
-        setMoveCount(prev => prev + 1);
-      } else if (dragType === 'col') {
-        let hasUnfrozenMove = false;
-        for (let row = 0; row < newGrid.length; row++) {
-          if (!frozenRows.has(row)) {
-            [newGrid[row][dragIndex], newGrid[row][dropIndex]] = 
-              [newGrid[row][dropIndex], newGrid[row][dragIndex]];
-            hasUnfrozenMove = true;
-          }
-        }
-        if (hasUnfrozenMove) {
-          setGrid(newGrid);
-          setMoveCount(prev => prev + 1);
-        }
-      }
-    }
-    
-    setTouchInfo(null);
-    setDragType(null);
-    setDragIndex(null);
-    setDropIndex(null);
-  }, [dragIndex, dropIndex, dragType, grid, frozenRows]);
 
-  useEffect(() => {
-    if (touchInfo) {
-      window.addEventListener('touchmove', handleTouchMove, { passive: false });
-      window.addEventListener('touchend', handleTouchEnd, { passive: false });
-      window.addEventListener('touchcancel', handleTouchEnd, { passive: false });
-      
-      return () => {
-        window.removeEventListener('touchmove', handleTouchMove);
-        window.removeEventListener('touchend', handleTouchEnd);
-        window.removeEventListener('touchcancel', handleTouchEnd);
+  // Visual feedback for touch dragging
+  const getDragStyles = useCallback((index: number, type: 'row' | 'col') => {
+    if (!touchDrag.active || touchDrag.dragType !== type) return {};
+    
+    const isSource = index === touchDrag.elementIndex;
+    const isTarget = index === dropTarget;
+    
+    if (isTarget) {
+      return {
+        opacity: 0.8,
+        backgroundColor: 'rgba(59, 130, 246, 0.1)'
       };
     }
-  }, [touchInfo, handleTouchMove, handleTouchEnd]);
-
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>, index: number) => {
-    e.preventDefault();
-    setDropIndex(index);
-  };
-
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>, dropIndex: number) => {
-    e.preventDefault();
-    if (dragIndex === null || dragType === null || dragIndex === dropIndex) return;
-  
-    if (dragType === 'row' && (frozenRows.has(dragIndex) || frozenRows.has(dropIndex))) {
-      return;
-    }
-  
-    const newGrid = grid.map(row => [...row]);
     
-    if (dragType === 'row') {
-      const temp = [...newGrid[dragIndex]];
-      newGrid[dragIndex] = [...newGrid[dropIndex]];
-      newGrid[dropIndex] = temp;
-    } else {
-      for (let row = 0; row < newGrid.length; row++) {
-        if (!frozenRows.has(row)) {
-          [newGrid[row][dragIndex], newGrid[row][dropIndex]] = 
-            [newGrid[row][dropIndex], newGrid[row][dragIndex]];
-        }
-      }
-    }
-  
-    setGrid(newGrid);
-    setMoveCount(prev => prev + 1);
-    handleDragEnd();
-  };
-
-  const handleFlip = (index: number, type: 'row' | 'col') => {
-    if (type === 'row' && frozenRows.has(index)) return;
-
-    const newGrid = grid.map(row => [...row]);
-    
-    if (type === 'row') {
-      newGrid[index] = newGrid[index].reverse();
-    } else {
-      const unfrozenValues: (number | null)[] = Array(grid.length).fill(null);
-      let unfrozenCount = 0;
-      
-      for (let i = 0; i < grid.length; i++) {
-        if (!frozenRows.has(i)) {
-          unfrozenValues[unfrozenCount] = grid[i][index];
-          unfrozenCount++;
-        }
-      }
-      
-      const reversedUnfrozen = unfrozenValues.slice(0, unfrozenCount).reverse();
-      
-      let unfrozenIndex = 0;
-      for (let i = 0; i < grid.length; i++) {
-        if (!frozenRows.has(i)) {
-          newGrid[i][index] = reversedUnfrozen[unfrozenIndex]!;
-          unfrozenIndex++;
-        }
-      }
-    }
-    
-    setGrid(newGrid);
-    setMoveCount(prev => prev + 1);
-  };
-
-  const handleDragEnd = () => {
-    setDragIndex(null);
-    setDragType(null);
-    setDropIndex(null);
-  };
+    return {};
+  }, [touchDrag, dropTarget]);
 
   return (
     <div className="flex flex-col items-center gap-4 md:gap-8 pt-32 md:pt-60 p-4 md:p-8">
@@ -401,7 +508,7 @@ const NumberGrid: React.FC = () => {
         <h1 className="text-8xl md:text-8xl font-bold text-gray-800">Flip</h1>
       </div>
       
-      <div className="relative">
+      <div className="relative" ref={gridRef}>
         <div className="grid grid-cols-4 gap-px bg-gray-100">
           {grid.map((row, rowIndex) =>
             row.map((num, colIndex) => (
@@ -410,12 +517,12 @@ const NumberGrid: React.FC = () => {
                 num={num}
                 isFrozen={frozenRows.has(rowIndex)}
                 isHighlighted={
-                  (dragType === 'row' && rowIndex === dragIndex) ||
-                  (dragType === 'col' && colIndex === dragIndex)
+                  (touchDrag.dragType === 'row' && rowIndex === touchDrag.elementIndex) ||
+                  (touchDrag.dragType === 'col' && colIndex === touchDrag.elementIndex)
                 }
                 isDragTarget={
-                  (dragType === 'row' && rowIndex === dropIndex) ||
-                  (dragType === 'col' && colIndex === dropIndex)
+                  (touchDrag.dragType === 'row' && rowIndex === dropTarget) ||
+                  (touchDrag.dragType === 'col' && colIndex === dropTarget)
                 }
               />
             ))
@@ -424,40 +531,38 @@ const NumberGrid: React.FC = () => {
 
         <div className="absolute -left-14 md:-left-24 top-0 space-y-px">
           {grid.map((_, index) => (
-            <DragHandle
-              key={`row-${index}`}
-              index={index}
-              type="row"
-              dragType={dragType}
-              dropIndex={dropIndex}
-              isFrozen={frozenRows.has(index)}
-              onDragStart={handleDragStart}
-              onDragEnd={handleDragEnd}
-              onDragOver={handleDragOver}
-              onDrop={handleDrop}
-              onFlip={handleFlip}
-              onTouchStart={handleTouchStart}
-              data-row-handle={index}
-            />
+            <div 
+              key={`row-${index}`} 
+              className="touch-none"
+            >
+              <DragHandle
+                index={index}
+                type="row"
+                isActive={touchDrag.dragType === 'row' && (index === touchDrag.elementIndex || index === dropTarget)}
+                isFrozen={frozenRows.has(index)}
+                onTouchStart={handleTouchStart}
+                onFlip={handleFlip}
+                onMouseDown={handleMouseStart}
+              />
+            </div>
           ))}
         </div>
 
         <div className="absolute -top-14 md:-top-24 left-0 flex space-x-px">
           {grid[0].map((_, index) => (
-            <DragHandle
+            <div 
               key={`col-${index}`}
-              index={index}
-              type="col"
-              dragType={dragType}
-              dropIndex={dropIndex}
-              onDragStart={handleDragStart}
-              onDragEnd={handleDragEnd}
-              onDragOver={handleDragOver}
-              onDrop={handleDrop}
-              onFlip={handleFlip}
-              onTouchStart={handleTouchStart}
-              data-col-handle={index}
-            />
+              className="touch-none"
+            >
+              <DragHandle
+                index={index}
+                type="col"
+                isActive={touchDrag.dragType === 'col' && (index === touchDrag.elementIndex || index === dropTarget)}
+                onTouchStart={handleTouchStart}
+                onFlip={handleFlip}
+                onMouseDown={handleMouseStart}
+              />
+            </div>
           ))}
         </div>
       </div>
@@ -466,6 +571,16 @@ const NumberGrid: React.FC = () => {
         Moves: {moveCount} | Completed Rows: {frozenRows.size}
       </div>
       <h2 className="text-base md:text-lg text-gray-600">Theme: Animals</h2>
+
+      <button
+        onClick={() => setShowInstructions(true)}
+        className="mt-6 text-blue-500 hover:underline"
+      >
+        How to Play
+      </button>
+
+      {/* HowToPlay Modal */}
+      {showInstructions && <HowToPlay onClose={() => setShowInstructions(false)} />}
     </div>
   );
 };
