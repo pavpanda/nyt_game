@@ -6,6 +6,8 @@ type Grid = number[][];
 type TouchInfo = {
   startX: number;
   startY: number;
+  currentX: number;
+  currentY: number;
   index: number;
   type: 'row' | 'col';
 } | null;
@@ -86,6 +88,7 @@ const Cell: React.FC<CellProps> = ({ num, isFrozen, isHighlighted, isDragTarget 
     {NUMBER_TO_LETTER[num]}
   </div>
 );
+
 
 interface DragHandleProps {
   index: number;
@@ -213,10 +216,13 @@ const NumberGrid: React.FC = () => {
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>, index: number, type: 'row' | 'col') => {
     if (type === 'row' && frozenRows.has(index)) return;
     
+    e.preventDefault(); // Prevent scrolling while dragging
     const touch = e.touches[0];
     setTouchInfo({
       startX: touch.clientX,
       startY: touch.clientY,
+      currentX: touch.clientX,
+      currentY: touch.clientY,
       index,
       type
     });
@@ -225,67 +231,94 @@ const NumberGrid: React.FC = () => {
     setDragIndex(index);
   };
 
+  const findDropTarget = useCallback((x: number, y: number, type: 'row' | 'col') => {
+    const selector = type === 'row' ? '[data-row-handle]' : '[data-col-handle]';
+    const elements = document.querySelectorAll(selector);
+    
+    let closestIndex = null;
+    let minDistance = Infinity;
+    
+    elements.forEach((el, i) => {
+      const rect = el.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      
+      const distance = type === 'row'
+        ? Math.abs(y - centerY)
+        : Math.abs(x - centerX);
+      
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestIndex = i;
+      }
+    });
+    
+    return closestIndex;
+  }, []);
+
   const handleTouchMove = useCallback((e: TouchEvent) => {
+    e.preventDefault(); // Prevent scrolling while dragging
+    
     if (!touchInfo || !dragType) return;
 
     const touch = e.touches[0];
-    const { startX, startY, type, index } = touchInfo;
+    const newTouchInfo = {
+      ...touchInfo,
+      currentX: touch.clientX,
+      currentY: touch.clientY,
+    };
+    setTouchInfo(newTouchInfo);
     
-    const deltaX = touch.clientX - startX;
-    const deltaY = touch.clientY - startY;
-    
-    if (type === 'row') {
-      const elements = document.querySelectorAll(`[data-row-handle]`);
-      elements.forEach((el, i) => {
-        const rect = el.getBoundingClientRect();
-        if (touch.clientY >= rect.top && touch.clientY <= rect.bottom && i !== index) {
-          setDropIndex(i);
-        }
-      });
-    } else {
-      const elements = document.querySelectorAll(`[data-col-handle]`);
-      elements.forEach((el, i) => {
-        const rect = el.getBoundingClientRect();
-        if (touch.clientX >= rect.left && touch.clientX <= rect.right && i !== index) {
-          setDropIndex(i);
-        }
-      });
+    const dropTarget = findDropTarget(touch.clientX, touch.clientY, touchInfo.type);
+    if (dropTarget !== null && dropTarget !== touchInfo.index) {
+      setDropIndex(dropTarget);
     }
-  }, [touchInfo, dragType]);
+  }, [touchInfo, dragType, findDropTarget]);
 
-  const handleTouchEnd = useCallback(() => {
+  const handleTouchEnd = useCallback((e: TouchEvent) => {
+    e.preventDefault();
+    
     if (dragIndex !== null && dropIndex !== null && dragType !== null) {
-      // Handle the drop operation directly instead of creating a synthetic event
       const newGrid = grid.map(row => [...row]);
       
       if (dragType === 'row' && (!frozenRows.has(dragIndex) && !frozenRows.has(dropIndex))) {
         const temp = [...newGrid[dragIndex]];
         newGrid[dragIndex] = [...newGrid[dropIndex]];
         newGrid[dropIndex] = temp;
+        setGrid(newGrid);
+        setMoveCount(prev => prev + 1);
       } else if (dragType === 'col') {
+        let hasUnfrozenMove = false;
         for (let row = 0; row < newGrid.length; row++) {
           if (!frozenRows.has(row)) {
             [newGrid[row][dragIndex], newGrid[row][dropIndex]] = 
               [newGrid[row][dropIndex], newGrid[row][dragIndex]];
+            hasUnfrozenMove = true;
           }
         }
+        if (hasUnfrozenMove) {
+          setGrid(newGrid);
+          setMoveCount(prev => prev + 1);
+        }
       }
-  
-      setGrid(newGrid);
-      setMoveCount(prev => prev + 1);
     }
     
     setTouchInfo(null);
-    handleDragEnd();
+    setDragType(null);
+    setDragIndex(null);
+    setDropIndex(null);
   }, [dragIndex, dropIndex, dragType, grid, frozenRows]);
 
   useEffect(() => {
     if (touchInfo) {
-      window.addEventListener('touchmove', handleTouchMove);
-      window.addEventListener('touchend', handleTouchEnd);
+      window.addEventListener('touchmove', handleTouchMove, { passive: false });
+      window.addEventListener('touchend', handleTouchEnd, { passive: false });
+      window.addEventListener('touchcancel', handleTouchEnd, { passive: false });
+      
       return () => {
         window.removeEventListener('touchmove', handleTouchMove);
         window.removeEventListener('touchend', handleTouchEnd);
+        window.removeEventListener('touchcancel', handleTouchEnd);
       };
     }
   }, [touchInfo, handleTouchMove, handleTouchEnd]);
