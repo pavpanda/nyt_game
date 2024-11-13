@@ -445,15 +445,9 @@ const NumberGrid: React.FC = () => {
       const newFrozen = new Set(prev);
       
       grid.forEach((row, index) => {
-        const solutionLetters = SOLUTION[index].map(num => NUMBER_TO_LETTER[num]);
-        const rowLetters = row.map(num => NUMBER_TO_LETTER[num]);
-  
-        const isCorrect = solutionLetters.every(letter => {
-          const requiredCount = solutionLetters.filter(l => l === letter).length;
-          const actualCount = rowLetters.filter(l => l === letter).length;
-          return actualCount >= requiredCount;
-        });
-  
+        const solutionRow = SOLUTION[index];
+        const isCorrect = row.every((num, i) => NUMBER_TO_LETTER[num] === NUMBER_TO_LETTER[solutionRow[i]]);
+        
         if (isCorrect) {
           newFrozen.add(index);
         } else {
@@ -465,6 +459,7 @@ const NumberGrid: React.FC = () => {
     });
   }, [grid]);
   
+
 
   // Add touch event listeners
   // Replace your existing useEffect that handles touch events with the following
