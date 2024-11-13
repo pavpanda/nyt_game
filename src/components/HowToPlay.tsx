@@ -16,7 +16,7 @@ const HowToPlay: React.FC<HowToPlayProps> = ({ onClose }) => (
         it might be in the wrong row! If it starts with a "b," try moving it up to the first row! If it starts with a "y," try 
         moving it down to the last row!<br /><br />
         The outer buttons allow you to swap rows or columns by dragging.<br/><br />
-        The inner buttons allow you to flip rows or columns (reverse the order)<br/><br />
+        The inner buttons allow you to flip rows or columns (reverse the order).<br/><br />
       </p>
         <button
         onClick={(onClose)}
