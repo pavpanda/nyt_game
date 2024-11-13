@@ -1,9 +1,9 @@
-import NumberGrid from './components/NumberGrid';
+import WordGrid from './components/NumberGrid';
 
 function App() {
   return (
     <div className="min-h-screen flex items-center justify-center">
-      <NumberGrid />
+      <WordGrid />
     </div>
   );
 }

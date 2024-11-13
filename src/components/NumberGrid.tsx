@@ -1,82 +1,198 @@
 import React, { useState, useEffect } from 'react';
-import { GridProps, DragType } from '../types/number-grid.types';
-import { moveRow, moveColumn, DEFAULT_GRID } from '../utils/grid-utils';
-import { ColumnHandles, RowHandles } from './GridHandles';
+import { ArrowLeftRight } from 'lucide-react';
 
-const scrambleGrid = (grid: number[][]) => {
+type DragType = 'row' | 'col' | null;
+type Grid = number[][];
+
+const NUMBER_TO_LETTER: { [key: number]: string } = {
+  1: 'b', 2: 'e', 3: 'a', 4: 'r',
+  5: 'f', 6: 'i', 7: 's', 8: 'h',
+  9: 'l', 10: 'i', 11: 'o', 12: 'n',
+  13: 'n', 14: 'e', 15: 'w', 16: 't'
+};
+
+const SOLUTION: Grid = [
+  [1, 2, 3, 4],
+  [5, 6, 7, 8],
+  [9, 10, 11, 12],
+  [13, 14, 15, 16]
+];
+
+const scrambleGrid = (grid: Grid): Grid => {
   const moves = 10;
-  let currentGrid = grid.map(row => [...row]);
+  let currentGrid: Grid = grid.map(row => [...row]);
   
   for (let i = 0; i < moves; i++) {
-    // Randomly choose between flip or swap
     const isFlip = Math.random() < 0.5;
+    const isRow = Math.random() < 0.5;
+    const maxIndex = isRow ? currentGrid.length : currentGrid[0].length;
+    const index1 = Math.floor(Math.random() * maxIndex);
     
     if (isFlip) {
-      // Randomly choose row or column flip
-      const isRow = Math.random() < 0.5;
-      const maxIndex = isRow ? currentGrid.length : currentGrid[0].length;
-      const index = Math.floor(Math.random() * maxIndex);
-      
       if (isRow) {
-        currentGrid[index] = currentGrid[index].reverse();
+        currentGrid[index1] = currentGrid[index1].reverse();
       } else {
         for (let j = 0; j < Math.floor(currentGrid.length / 2); j++) {
           const k = currentGrid.length - 1 - j;
-          [currentGrid[j][index], currentGrid[k][index]] = 
-            [currentGrid[k][index], currentGrid[j][index]];
+          [currentGrid[j][index1], currentGrid[k][index1]] = 
+            [currentGrid[k][index1], currentGrid[j][index1]];
         }
       }
     } else {
-      // Randomly choose row or column swap
-      const isRow = Math.random() < 0.5;
-      const maxIndex = isRow ? currentGrid.length : currentGrid[0].length;
-      const index1 = Math.floor(Math.random() * maxIndex);
-      let index2;
+      let index2: number;
       do {
         index2 = Math.floor(Math.random() * maxIndex);
       } while (index2 === index1);
       
-      currentGrid = isRow 
-        ? moveRow(currentGrid, index1, index2)
-        : moveColumn(currentGrid, index1, index2);
+      if (isRow) {
+        const temp = [...currentGrid[index1]];
+        currentGrid[index1] = [...currentGrid[index2]];
+        currentGrid[index2] = temp;
+      } else {
+        for (let row = 0; row < currentGrid.length; row++) {
+          [currentGrid[row][index1], currentGrid[row][index2]] = 
+            [currentGrid[row][index2], currentGrid[row][index1]];
+        }
+      }
     }
   }
   
   return currentGrid;
 };
 
-const NumberGrid: React.FC<{ initialGrid?: number[][] }> = ({ initialGrid = DEFAULT_GRID }) => {
-  const [grid, setGrid] = useState<number[][]>(() => scrambleGrid(initialGrid));
+interface CellProps {
+  num: number;
+  isFrozen: boolean;
+  isHighlighted: boolean;
+  isDragTarget: boolean;
+}
+
+const Cell: React.FC<CellProps> = ({ num, isFrozen, isHighlighted, isDragTarget }) => (
+  <div
+    className={`
+      w-8 h-8 md:w-12 md:h-12 flex items-center justify-center text-xs md:text-sm
+      ${isFrozen ? 'bg-emerald-50 text-emerald-700' : 'bg-white text-gray-600'}
+      ${isHighlighted ? 'bg-blue-50 ring-2 ring-blue-200' : ''}
+      ${isDragTarget ? 'ring-2 ring-blue-400' : ''}
+      transition-all duration-150
+    `}
+  >
+    {NUMBER_TO_LETTER[num]}
+  </div>
+);
+
+interface DragHandleProps {
+  index: number;
+  type: 'row' | 'col';
+  dragType: DragType;
+  dropIndex: number | null;
+  isFrozen?: boolean;
+  onDragStart: (e: React.DragEvent<HTMLDivElement>, index: number, type: 'row' | 'col') => void;
+  onDragEnd: () => void;
+  onDragOver: (e: React.DragEvent<HTMLDivElement>, index: number) => void;
+  onDrop: (e: React.DragEvent<HTMLDivElement>, index: number) => void;
+  onFlip: (index: number, type: 'row' | 'col') => void;
+}
+
+const DragHandle: React.FC<DragHandleProps> = ({
+  index,
+  type,
+  dragType,
+  dropIndex,
+  isFrozen = false,
+  onDragStart,
+  onDragEnd,
+  onDragOver,
+  onDrop,
+  onFlip,
+}) => {
+  const isColumn = type === 'col';
+  const isDragging = dragType === type && dropIndex === index;
+  
+  return (
+    <div 
+      className={`
+        flex ${isColumn ? 'flex-col' : ''} items-center
+        ${isColumn ? 'w-8 md:w-12' : 'h-8 md:h-12'} gap-0.5 md:gap-1
+      `}
+    >
+      <div
+        draggable={!isFrozen}
+        onDragStart={(e) => onDragStart(e, index, type)}
+        onDragEnd={onDragEnd}
+        onDragOver={(e) => dragType === type && onDragOver(e, index)}
+        onDrop={(e) => onDrop(e, index)}
+        className={`
+          w-6 h-6 md:w-8 md:h-8 flex items-center justify-center
+          ${isFrozen ? 'opacity-30 cursor-not-allowed' : 'cursor-move hover:bg-gray-50'}
+          ${isDragging ? 'bg-blue-50' : ''}
+          rounded-md transition-colors duration-150
+        `}
+      >
+        <div 
+          className={`
+            ${isColumn ? 'w-0.5 h-2 md:h-3' : 'h-0.5 w-2 md:w-3'} 
+            ${isDragging ? 'bg-blue-400' : 'bg-gray-400'}
+            transition-colors duration-150
+          `} 
+        />
+      </div>
+      <button
+        onClick={() => onFlip(index, type)}
+        disabled={isFrozen}
+        className={`
+          w-6 h-6 md:w-8 md:h-8 flex items-center justify-center
+          ${isFrozen ? 'opacity-30 cursor-not-allowed' : 'hover:bg-gray-50'}
+          rounded-md transition-colors duration-150
+        `}
+      >
+        <ArrowLeftRight 
+          className={`
+            w-3 h-3 md:w-4 md:h-4
+            ${isFrozen ? 'text-gray-300' : 'text-gray-400'} 
+            ${isColumn ? 'rotate-90' : ''} 
+          `}
+        />
+      </button>
+    </div>
+  );
+};
+
+const NumberGrid: React.FC = () => {
+  const [grid, setGrid] = useState<Grid>(() => scrambleGrid(SOLUTION));
   const [dragType, setDragType] = useState<DragType>(null);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
-  const [previewGrid, setPreviewGrid] = useState<number[][]>(grid);
-  const [moveCount, setMoveCount] = useState(0);
-  const [touchStartY, setTouchStartY] = useState<number | null>(null);
-  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [moveCount, setMoveCount] = useState<number>(0);
+  const [frozenRows, setFrozenRows] = useState<Set<number>>(new Set());
+
+  const isRowCorrect = (row: number[], targetRow: number[]): boolean => {
+    const rowLetters = row.map(num => NUMBER_TO_LETTER[num]);
+    const targetLetters = targetRow.map(num => NUMBER_TO_LETTER[num]);
+    return rowLetters.join('') === targetLetters.join('');
+  };
 
   useEffect(() => {
-    if (dragIndex === null || dropIndex === null || dragType === null) {
-      setPreviewGrid(grid);
+    setFrozenRows(prev => {
+      const newFrozen = new Set(prev);
+      
+      grid.forEach((row, index) => {
+        if (isRowCorrect(row, SOLUTION[index])) {
+          newFrozen.add(index);
+        } else {
+          newFrozen.delete(index);
+        }
+      });
+      
+      return newFrozen;
+    });
+  }, [grid]);
+
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, index: number, type: 'row' | 'col') => {
+    if (type === 'row' && frozenRows.has(index)) {
+      e.preventDefault();
       return;
     }
-
-    if (dragIndex === dropIndex) {
-      return;
-    }
-
-    const newGrid = dragType === 'row'
-      ? moveRow([...grid.map(row => [...row])], dragIndex, dropIndex)
-      : moveColumn([...grid.map(row => [...row])], dragIndex, dropIndex);
-    
-    setPreviewGrid(newGrid);
-  }, [dragIndex, dropIndex, dragType, grid]);
-
-  const handleDragStart = (
-    e: React.DragEvent,
-    index: number,
-    type: DragType
-  ) => {
     setDragType(type);
     setDragIndex(index);
     
@@ -84,22 +200,70 @@ const NumberGrid: React.FC<{ initialGrid?: number[][] }> = ({ initialGrid = DEFA
     e.dataTransfer.setDragImage(img, 0, 0);
   };
 
-  const handleDragOver = (e: React.DragEvent, index: number) => {
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>, index: number) => {
     e.preventDefault();
     setDropIndex(index);
   };
 
-  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>, dropIndex: number) => {
     e.preventDefault();
     if (dragIndex === null || dragType === null || dragIndex === dropIndex) return;
 
-    const newGrid = dragType === 'row'
-      ? moveRow(grid, dragIndex, dropIndex)
-      : moveColumn(grid, dragIndex, dropIndex);
+    if (dragType === 'row' && (frozenRows.has(dragIndex) || frozenRows.has(dropIndex))) {
+      return;
+    }
+
+    const newGrid = grid.map(row => [...row]);
+    
+    if (dragType === 'row') {
+      const temp = [...newGrid[dragIndex]];
+      newGrid[dragIndex] = [...newGrid[dropIndex]];
+      newGrid[dropIndex] = temp;
+    } else {
+      for (let row = 0; row < newGrid.length; row++) {
+        if (!frozenRows.has(row)) {
+          [newGrid[row][dragIndex], newGrid[row][dropIndex]] = 
+            [newGrid[row][dropIndex], newGrid[row][dragIndex]];
+        }
+      }
+    }
+
+    setGrid(newGrid);
+    setMoveCount(prev => prev + 1);
+    handleDragEnd();
+  };
+
+  const handleFlip = (index: number, type: 'row' | 'col') => {
+    if (type === 'row' && frozenRows.has(index)) return;
+
+    const newGrid = grid.map(row => [...row]);
+    
+    if (type === 'row') {
+      newGrid[index] = newGrid[index].reverse();
+    } else {
+      const unfrozenValues: (number | null)[] = Array(grid.length).fill(null);
+      let unfrozenCount = 0;
+      
+      for (let i = 0; i < grid.length; i++) {
+        if (!frozenRows.has(i)) {
+          unfrozenValues[unfrozenCount] = grid[i][index];
+          unfrozenCount++;
+        }
+      }
+      
+      const reversedUnfrozen = unfrozenValues.slice(0, unfrozenCount).reverse();
+      
+      let unfrozenIndex = 0;
+      for (let i = 0; i < grid.length; i++) {
+        if (!frozenRows.has(i)) {
+          newGrid[i][index] = reversedUnfrozen[unfrozenIndex]!;
+          unfrozenIndex++;
+        }
+      }
+    }
     
     setGrid(newGrid);
-    setMoveCount(prevCount => prevCount + 1);
-    handleDragEnd();
+    setMoveCount(prev => prev + 1);
   };
 
   const handleDragEnd = () => {
@@ -108,147 +272,73 @@ const NumberGrid: React.FC<{ initialGrid?: number[][] }> = ({ initialGrid = DEFA
     setDropIndex(null);
   };
 
-  const handleTouchStart = (
-    e: React.TouchEvent,
-    index: number,
-    type: DragType
-  ) => {
-    e.preventDefault(); // Prevent scrolling while dragging
-    const touch = e.touches[0];
-    setTouchStartY(touch.clientY);
-    setTouchStartX(touch.clientX);
-    setDragType(type);
-    setDragIndex(index);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent, currentIndex: number) => {
-    e.preventDefault();
-    if (dragIndex === null || dragType === null) return;
-
-    const touch = e.touches[0];
-    const deltaY = touch.clientY - (touchStartY ?? 0);
-    const deltaX = touch.clientX - (touchStartX ?? 0);
-    
-    // Calculate the potential new position based on touch movement
-    const handleSize = 48; // 12 * 4 (w-12 or h-12 from the CSS)
-    const movement = dragType === 'row' ? deltaY : deltaX;
-    const potentialPosition = Math.round(movement / handleSize) + dragIndex;
-    
-    // Clamp the position to valid grid indices
-    const maxIndex = dragType === 'row' ? grid.length - 1 : grid[0].length - 1;
-    const newPosition = Math.max(0, Math.min(potentialPosition, maxIndex));
-    
-    setDropIndex(newPosition);
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    e.preventDefault();
-    if (dragIndex !== null && dropIndex !== null && dragType !== null) {
-      const newGrid = dragType === 'row'
-        ? moveRow(grid, dragIndex, dropIndex)
-        : moveColumn(grid, dragIndex, dropIndex);
-      
-      setGrid(newGrid);
-      setMoveCount(prevCount => prevCount + 1);
-    }
-    
-    setDragIndex(null);
-    setDragType(null);
-    setDropIndex(null);
-    setTouchStartY(null);
-    setTouchStartX(null);
-  };
-
-  const handleFlip = (index: number, type: DragType) => {
-    const newGrid = grid.map(row => [...row]);
-    
-    if (type === 'row') {
-      newGrid[index] = newGrid[index].reverse();
-    } else {
-      for (let i = 0; i < Math.floor(newGrid.length / 2); i++) {
-        const j = newGrid.length - 1 - i;
-        [newGrid[i][index], newGrid[j][index]] = [newGrid[j][index], newGrid[i][index]];
-      }
-    }
-    
-    setGrid(newGrid);
-    setMoveCount(prevCount => prevCount + 1);
-  };
-
-  const handleReset = () => {
-    setGrid(scrambleGrid(initialGrid));
-    setMoveCount(0);
-  };
-
-  const handleProps = {
-    dragType,
-    dropIndex,
-    onDragStart: handleDragStart,
-    onDragEnd: handleDragEnd,
-    onDragOver: handleDragOver,
-    onDrop: handleDrop,
-    onTouchStart: handleTouchStart,
-    onTouchMove: handleTouchMove,
-    onTouchEnd: handleTouchEnd,
-    onFlip: handleFlip,
-  };
-
   return (
-    <div className="flex flex-col items-center gap-6 p-8">
-      <h1 className="text-6xl font-bold">Flip</h1>
-      <p className="text-gray-600 text-2xl">Drag handles to reorder or click arrows to flip rows/columns</p>
-
-      <div className="relative bg-white rounded-lg shadow-sm">
-        <div className="h-20">
-          <ColumnHandles
-            columnCount={grid[0].length}
-            {...handleProps}
-          />
-        </div>
-
-        <div className="flex">
-          <RowHandles
-            rowCount={grid.length}
-            {...handleProps}
-          />
-
-          <div className="grid grid-cols-4 gap-px bg-gray-200 p-px">
-            {previewGrid.map((row, rowIndex) =>
-              row.map((num, colIndex) => {
-                const originalRowIndex = grid.findIndex(r => r.includes(num));
-                const originalColIndex = grid[originalRowIndex].indexOf(num);
-                const isHighlighted = 
-                  (dragType === 'row' && originalRowIndex === dragIndex) ||
-                  (dragType === 'col' && originalColIndex === dragIndex);
-
-                return (
-                  <div
-                    key={`${rowIndex}-${colIndex}`}
-                    className={`w-12 h-12 flex items-center justify-center font-medium select-none
-                             transition-colors duration-200 ${
-                               isHighlighted ? 'bg-blue-50' : 'bg-white'
-                             }`}
-                  >
-                    {num}
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
+    <div className="flex flex-col items-center gap-4 md:gap-8 pt-24 md:pt-32 p-4 md:p-8">
+      <div className="text-center space-y-2 absolute top-8 md:top-16">
+        <h1 className="text-6xl md:text-8xl font-bold text-gray-800">Flip</h1>
       </div>
       
-      <div className="flex flex-col items-center gap-4">
-        <div className="text-gray-500 text-lg font-medium">
-          Moves: {moveCount}
+      <div className="relative">
+        <div className="grid grid-cols-4 gap-px bg-gray-100">
+          {grid.map((row, rowIndex) =>
+            row.map((num, colIndex) => (
+              <Cell
+                key={`${rowIndex}-${colIndex}`}
+                num={num}
+                isFrozen={frozenRows.has(rowIndex)}
+                isHighlighted={
+                  (dragType === 'row' && rowIndex === dragIndex) ||
+                  (dragType === 'col' && colIndex === dragIndex)
+                }
+                isDragTarget={
+                  (dragType === 'row' && rowIndex === dropIndex) ||
+                  (dragType === 'col' && colIndex === dropIndex)
+                }
+              />
+            ))
+          )}
         </div>
-        <button 
-          onClick={handleReset}
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600 transition-colors"
-        >
-          New Puzzle
-        </button>
+
+        <div className="absolute -left-12 md:-left-20 top-0 space-y-px">
+          {grid.map((_, index) => (
+            <DragHandle
+              key={`row-${index}`}
+              index={index}
+              type="row"
+              dragType={dragType}
+              dropIndex={dropIndex}
+              isFrozen={frozenRows.has(index)}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
+              onFlip={handleFlip}
+            />
+          ))}
+        </div>
+
+        <div className="absolute -top-12 md:-top-20 left-0 flex space-x-px">
+          {grid[0].map((_, index) => (
+            <DragHandle
+              key={`col-${index}`}
+              index={index}
+              type="col"
+              dragType={dragType}
+              dropIndex={dropIndex}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
+              onFlip={handleFlip}
+            />
+          ))}
+        </div>
       </div>
+
+      <div className="text-xs md:text-sm text-gray-500 mt-2 md:mt-4">
+        Moves: {moveCount} | Completed Rows: {frozenRows.size}
+      </div>
+      <h2 className="text-sm md:text-base text-gray-600">Theme: Animals</h2>
     </div>
   );
 };
