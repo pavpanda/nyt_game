@@ -1,8 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ArrowLeftRight } from 'lucide-react';
 
 type DragType = 'row' | 'col' | null;
 type Grid = number[][];
+type TouchInfo = {
+  startX: number;
+  startY: number;
+  index: number;
+  type: 'row' | 'col';
+} | null;
 
 const NUMBER_TO_LETTER: { [key: number]: string } = {
   1: 'b', 2: 'e', 3: 'a', 4: 'r',
@@ -70,7 +76,7 @@ interface CellProps {
 const Cell: React.FC<CellProps> = ({ num, isFrozen, isHighlighted, isDragTarget }) => (
   <div
     className={`
-      w-8 h-8 md:w-12 md:h-12 flex items-center justify-center text-xs md:text-sm
+      w-14 h-14 md:w-20 md:h-20 flex items-center justify-center text-base md:text-xl
       ${isFrozen ? 'bg-emerald-50 text-emerald-700' : 'bg-white text-gray-600'}
       ${isHighlighted ? 'bg-blue-50 ring-2 ring-blue-200' : ''}
       ${isDragTarget ? 'ring-2 ring-blue-400' : ''}
@@ -92,6 +98,7 @@ interface DragHandleProps {
   onDragOver: (e: React.DragEvent<HTMLDivElement>, index: number) => void;
   onDrop: (e: React.DragEvent<HTMLDivElement>, index: number) => void;
   onFlip: (index: number, type: 'row' | 'col') => void;
+  onTouchStart: (e: React.TouchEvent<HTMLDivElement>, index: number, type: 'row' | 'col') => void;
 }
 
 const DragHandle: React.FC<DragHandleProps> = ({
@@ -105,6 +112,7 @@ const DragHandle: React.FC<DragHandleProps> = ({
   onDragOver,
   onDrop,
   onFlip,
+  onTouchStart,
 }) => {
   const isColumn = type === 'col';
   const isDragging = dragType === type && dropIndex === index;
@@ -113,7 +121,7 @@ const DragHandle: React.FC<DragHandleProps> = ({
     <div 
       className={`
         flex ${isColumn ? 'flex-col' : ''} items-center
-        ${isColumn ? 'w-8 md:w-12' : 'h-8 md:h-12'} gap-0.5 md:gap-1
+        ${isColumn ? 'w-14 md:w-20' : 'h-14 md:h-20'} gap-1 md:gap-2
       `}
     >
       <div
@@ -122,16 +130,17 @@ const DragHandle: React.FC<DragHandleProps> = ({
         onDragEnd={onDragEnd}
         onDragOver={(e) => dragType === type && onDragOver(e, index)}
         onDrop={(e) => onDrop(e, index)}
+        onTouchStart={(e) => onTouchStart(e, index, type)}
         className={`
-          w-6 h-6 md:w-8 md:h-8 flex items-center justify-center
-          ${isFrozen ? 'opacity-30 cursor-not-allowed' : 'cursor-move hover:bg-gray-50'}
+          w-8 h-8 md:w-12 md:h-12 flex items-center justify-center
+          ${isFrozen ? 'opacity-30 cursor-not-allowed' : 'cursor-move hover:bg-gray-50 active:bg-gray-100'}
           ${isDragging ? 'bg-blue-50' : ''}
           rounded-md transition-colors duration-150
         `}
       >
         <div 
           className={`
-            ${isColumn ? 'w-0.5 h-2 md:h-3' : 'h-0.5 w-2 md:w-3'} 
+            ${isColumn ? 'w-0.5 h-3 md:h-4' : 'h-0.5 w-3 md:w-4'} 
             ${isDragging ? 'bg-blue-400' : 'bg-gray-400'}
             transition-colors duration-150
           `} 
@@ -141,14 +150,14 @@ const DragHandle: React.FC<DragHandleProps> = ({
         onClick={() => onFlip(index, type)}
         disabled={isFrozen}
         className={`
-          w-6 h-6 md:w-8 md:h-8 flex items-center justify-center
-          ${isFrozen ? 'opacity-30 cursor-not-allowed' : 'hover:bg-gray-50'}
+          w-8 h-8 md:w-12 md:h-12 flex items-center justify-center
+          ${isFrozen ? 'opacity-30 cursor-not-allowed' : 'hover:bg-gray-50 active:bg-gray-100'}
           rounded-md transition-colors duration-150
         `}
       >
         <ArrowLeftRight 
           className={`
-            w-3 h-3 md:w-4 md:h-4
+            w-4 h-4 md:w-5 md:h-5
             ${isFrozen ? 'text-gray-300' : 'text-gray-400'} 
             ${isColumn ? 'rotate-90' : ''} 
           `}
@@ -165,6 +174,7 @@ const NumberGrid: React.FC = () => {
   const [dropIndex, setDropIndex] = useState<number | null>(null);
   const [moveCount, setMoveCount] = useState<number>(0);
   const [frozenRows, setFrozenRows] = useState<Set<number>>(new Set());
+  const [touchInfo, setTouchInfo] = useState<TouchInfo>(null);
 
   const isRowCorrect = (row: number[], targetRow: number[]): boolean => {
     const rowLetters = row.map(num => NUMBER_TO_LETTER[num]);
@@ -200,6 +210,86 @@ const NumberGrid: React.FC = () => {
     e.dataTransfer.setDragImage(img, 0, 0);
   };
 
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>, index: number, type: 'row' | 'col') => {
+    if (type === 'row' && frozenRows.has(index)) return;
+    
+    const touch = e.touches[0];
+    setTouchInfo({
+      startX: touch.clientX,
+      startY: touch.clientY,
+      index,
+      type
+    });
+    
+    setDragType(type);
+    setDragIndex(index);
+  };
+
+  const handleTouchMove = useCallback((e: TouchEvent) => {
+    if (!touchInfo || !dragType) return;
+
+    const touch = e.touches[0];
+    const { startX, startY, type, index } = touchInfo;
+    
+    const deltaX = touch.clientX - startX;
+    const deltaY = touch.clientY - startY;
+    
+    if (type === 'row') {
+      const elements = document.querySelectorAll(`[data-row-handle]`);
+      elements.forEach((el, i) => {
+        const rect = el.getBoundingClientRect();
+        if (touch.clientY >= rect.top && touch.clientY <= rect.bottom && i !== index) {
+          setDropIndex(i);
+        }
+      });
+    } else {
+      const elements = document.querySelectorAll(`[data-col-handle]`);
+      elements.forEach((el, i) => {
+        const rect = el.getBoundingClientRect();
+        if (touch.clientX >= rect.left && touch.clientX <= rect.right && i !== index) {
+          setDropIndex(i);
+        }
+      });
+    }
+  }, [touchInfo, dragType]);
+
+  const handleTouchEnd = useCallback(() => {
+    if (dragIndex !== null && dropIndex !== null && dragType !== null) {
+      // Handle the drop operation directly instead of creating a synthetic event
+      const newGrid = grid.map(row => [...row]);
+      
+      if (dragType === 'row' && (!frozenRows.has(dragIndex) && !frozenRows.has(dropIndex))) {
+        const temp = [...newGrid[dragIndex]];
+        newGrid[dragIndex] = [...newGrid[dropIndex]];
+        newGrid[dropIndex] = temp;
+      } else if (dragType === 'col') {
+        for (let row = 0; row < newGrid.length; row++) {
+          if (!frozenRows.has(row)) {
+            [newGrid[row][dragIndex], newGrid[row][dropIndex]] = 
+              [newGrid[row][dropIndex], newGrid[row][dragIndex]];
+          }
+        }
+      }
+  
+      setGrid(newGrid);
+      setMoveCount(prev => prev + 1);
+    }
+    
+    setTouchInfo(null);
+    handleDragEnd();
+  }, [dragIndex, dropIndex, dragType, grid, frozenRows]);
+
+  useEffect(() => {
+    if (touchInfo) {
+      window.addEventListener('touchmove', handleTouchMove);
+      window.addEventListener('touchend', handleTouchEnd);
+      return () => {
+        window.removeEventListener('touchmove', handleTouchMove);
+        window.removeEventListener('touchend', handleTouchEnd);
+      };
+    }
+  }, [touchInfo, handleTouchMove, handleTouchEnd]);
+
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>, index: number) => {
     e.preventDefault();
     setDropIndex(index);
@@ -208,11 +298,11 @@ const NumberGrid: React.FC = () => {
   const handleDrop = (e: React.DragEvent<HTMLDivElement>, dropIndex: number) => {
     e.preventDefault();
     if (dragIndex === null || dragType === null || dragIndex === dropIndex) return;
-
+  
     if (dragType === 'row' && (frozenRows.has(dragIndex) || frozenRows.has(dropIndex))) {
       return;
     }
-
+  
     const newGrid = grid.map(row => [...row]);
     
     if (dragType === 'row') {
@@ -227,7 +317,7 @@ const NumberGrid: React.FC = () => {
         }
       }
     }
-
+  
     setGrid(newGrid);
     setMoveCount(prev => prev + 1);
     handleDragEnd();
@@ -273,9 +363,9 @@ const NumberGrid: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center gap-4 md:gap-8 pt-24 md:pt-32 p-4 md:p-8">
-      <div className="text-center space-y-2 absolute top-8 md:top-16">
-        <h1 className="text-6xl md:text-8xl font-bold text-gray-800">Flip</h1>
+    <div className="flex flex-col items-center gap-4 md:gap-8 pt-32 md:pt-60 p-4 md:p-8">
+      <div className="text-center space-y-2 absolute top-9 md:top-16">
+        <h1 className="text-8xl md:text-8xl font-bold text-gray-800">Flip</h1>
       </div>
       
       <div className="relative">
@@ -299,7 +389,7 @@ const NumberGrid: React.FC = () => {
           )}
         </div>
 
-        <div className="absolute -left-12 md:-left-20 top-0 space-y-px">
+        <div className="absolute -left-14 md:-left-24 top-0 space-y-px">
           {grid.map((_, index) => (
             <DragHandle
               key={`row-${index}`}
@@ -313,11 +403,13 @@ const NumberGrid: React.FC = () => {
               onDragOver={handleDragOver}
               onDrop={handleDrop}
               onFlip={handleFlip}
+              onTouchStart={handleTouchStart}
+              data-row-handle={index}
             />
           ))}
         </div>
 
-        <div className="absolute -top-12 md:-top-20 left-0 flex space-x-px">
+        <div className="absolute -top-14 md:-top-24 left-0 flex space-x-px">
           {grid[0].map((_, index) => (
             <DragHandle
               key={`col-${index}`}
@@ -330,15 +422,17 @@ const NumberGrid: React.FC = () => {
               onDragOver={handleDragOver}
               onDrop={handleDrop}
               onFlip={handleFlip}
+              onTouchStart={handleTouchStart}
+              data-col-handle={index}
             />
           ))}
         </div>
       </div>
 
-      <div className="text-xs md:text-sm text-gray-500 mt-2 md:mt-4">
+      <div className="text-sm md:text-base text-gray-500 mt-4 md:mt-6">
         Moves: {moveCount} | Completed Rows: {frozenRows.size}
       </div>
-      <h2 className="text-sm md:text-base text-gray-600">Theme: Animals</h2>
+      <h2 className="text-base md:text-lg text-gray-600">Theme: Animals</h2>
     </div>
   );
 };
