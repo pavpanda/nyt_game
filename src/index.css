@@ -9,9 +9,27 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  padding: 0;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+.transition-all {
+  transition: all 0.3s ease-in-out;
+}
+
+/* global.css */
+
+/* Adjust the flip button for the row to be slightly above the bottom edge */
+.flip-button-row {
+  bottom: 4px; /* Adjust as needed */
+}
+
+/* Adjust the flip button for the column to be slightly inside the right edge */
+.flip-button-col {
+  right: 4px; /* Adjust as needed */
 }

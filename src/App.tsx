@@ -1,9 +1,9 @@
-import WordGrid from './components/NumberGrid';
+import { GameBoard } from './components/GameBoard';
 
 function App() {
   return (
     <div className="min-h-screen flex items-center justify-center">
-      <WordGrid />
+      <GameBoard />
     </div>
   );
 }
