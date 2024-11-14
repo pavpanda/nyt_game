@@ -7,11 +7,19 @@ const NextPuzzleTimer = () => {
   useEffect(() => {
     const calculateTimeUntilNext = () => {
       const now = new Date();
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      tomorrow.setHours(9, 0, 0, 0); // 9 AM ET
+      const next9AM = new Date();
 
-      const diff = tomorrow.getTime() - now.getTime();
+      console.log(now.getHours());
+
+      // Check if it's already past 9 AM today
+      if (now.getHours() >= 9) {
+        // If it is, set the next 9 AM to tomorrow
+        next9AM.setDate(next9AM.getDate() + 1);
+      }
+
+      next9AM.setHours(9, 0, 0, 0); // Set time to 9 AM ET
+      
+      const diff = next9AM.getTime() - now.getTime();
       
       const hours = Math.floor(diff / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));

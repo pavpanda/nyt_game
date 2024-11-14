@@ -9,8 +9,14 @@ const HowToPlay: React.FC<HowToPlayProps> = ({ onClose }) => (
     <div className="bg-white rounded-lg p-6 max-w-md mx-auto w-11/12 sm:w-full">
       <h2 className="text-2xl font-bold mb-4">How to Play</h2>
       <p className="mb-4">
-        Find the four four-letter themed words hidden in the grid and arrange them <strong>alphabetically</strong> by row!<br/><br />
-        Solved words turn green. Drag cells to swap rows or columns. Use the outer widgets to flip (reverse) rows or columns.
+          1. Find four 4-letter words for the given theme.<br/>
+          2. Swap and reverse rows/columns to spell the words.<br/>
+          3. Words must read alphabetically from top to bottom.<br/><br/>
+
+          Swap: Drag rows/columns onto other rows/columns.<br/>
+          Reverse: Click on-screen arrow buttons.<br/>
+
+
       </p>
         <button
         onClick={(onClose)}
