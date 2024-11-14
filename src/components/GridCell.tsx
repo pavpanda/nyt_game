@@ -49,14 +49,19 @@ export const GridCell: React.FC<GridCellProps> = ({
 
   const getCellClass = () => {
     if (isFrozenRow) {
+      // Handle both zero-based and one-based cases
       switch (solvedRowNumber) {
         case 0:
+        case 1:
           return 'bg-yellow-200 opacity-90';
         case 1:
+        case 2:
           return 'bg-orange-200 opacity-90';
         case 2:
+        case 3:
           return 'bg-green-200 opacity-90';
         case 3:
+        case 4:
           return 'bg-purple-200 opacity-90';
         default:
           return 'bg-gray-200 opacity-90';
