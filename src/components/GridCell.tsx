@@ -50,13 +50,13 @@ export const GridCell: React.FC<GridCellProps> = ({
   const getCellClass = () => {
     if (isFrozenRow) {
       switch (solvedRowNumber) {
-        case 1:
+        case 0:
           return 'bg-yellow-200 opacity-90';
-        case 2:
+        case 1:
           return 'bg-orange-200 opacity-90';
-        case 3:
+        case 2:
           return 'bg-green-200 opacity-90';
-        case 4:
+        case 3:
           return 'bg-purple-200 opacity-90';
         default:
           return 'bg-gray-200 opacity-90';
