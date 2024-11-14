@@ -4,8 +4,8 @@ import { GameHeader } from './GridHeader';
 import { GridCell } from './GridCell';
 import { GameStats } from './GameStats';
 import HowToPlay from './HowToPlay';
-import WinModal from './WinModal';
 import { useTouchDragAndDrop } from '../hooks/useTouchDragAndDrop';
+import { THEME } from '../constants/gameConstants';
 
 interface ResponsiveGameLayoutProps {
   grid: Grid;
@@ -102,7 +102,7 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
         }}
         className="w-full flex justify-center"
       >
-        <GameHeader theme="Google" onShowInstructions={onShowInstructions} />
+        <GameHeader theme={THEME} onShowInstructions={onShowInstructions} />
       </div>
 
       <div className="relative mt-32 md:mt-8 flex justify-center">

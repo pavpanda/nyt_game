@@ -15,8 +15,6 @@ const HowToPlay: React.FC<HowToPlayProps> = ({ onClose }) => (
 
           Swap: Drag rows/columns onto other rows/columns.<br/>
           Reverse: Click on-screen arrow buttons.<br/>
-
-
       </p>
         <button
         onClick={(onClose)}

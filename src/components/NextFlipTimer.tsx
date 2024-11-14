@@ -8,9 +8,7 @@ const NextPuzzleTimer = () => {
     const calculateTimeUntilNext = () => {
       const now = new Date();
       const next9AM = new Date();
-
-      console.log(now.getHours());
-
+      
       // Check if it's already past 9 AM today
       if (now.getHours() >= 9) {
         // If it is, set the next 9 AM to tomorrow
