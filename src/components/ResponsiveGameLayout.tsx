@@ -10,6 +10,7 @@ import { THEME } from '../constants/gameConstants';
 interface ResponsiveGameLayoutProps {
   grid: Grid;
   frozenRows: Set<number>;
+  solvedRowsOrder: Map<number, number>;
   moveCount: number;
   showInstructions: boolean;
   onShowInstructions: () => void;
@@ -24,6 +25,7 @@ interface ResponsiveGameLayoutProps {
 const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
   grid,
   frozenRows,
+  solvedRowsOrder,
   moveCount,
   showInstructions,
   onShowInstructions,
@@ -107,7 +109,6 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
 
       <div className="relative mt-32 md:mt-8 flex justify-center">
         <div className="relative">
-          {/* Grid */}
           <div
             className="grid"
             ref={gridRef}
@@ -118,7 +119,6 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
               position: 'relative',
             }}
           >
-            {/* Render the grid cells */}
             {grid.map((row, rowIndex) =>
               row.map((cell, colIndex) => (
                 <div
@@ -137,6 +137,7 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
                     isFrozenRow={frozenRows.has(rowIndex)}
                     isFirstRow={rowIndex === 0}
                     isFirstCol={colIndex === 0}
+                    solvedRowNumber={solvedRowsOrder.get(rowIndex) || 0}
                     onFlip={onFlip}
                     onDragStart={handleDragStart}
                     dragState={dragState}

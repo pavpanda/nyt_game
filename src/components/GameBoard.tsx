@@ -9,6 +9,7 @@ export const GameBoard = () => {
   const [grid, setGrid] = useState<Grid>(() => SCRAMBLE);
   const [moveCount, setMoveCount] = useState<number>(0);
   const [frozenRows, setFrozenRows] = useState<Set<number>>(new Set());
+  const [solvedRowsOrder, setSolvedRowsOrder] = useState<Map<number, number>>(new Map());
   const [showInstructions, setShowInstructions] = useState<boolean>(false);
   const [showWinModal, setShowWinModal] = useState<boolean>(false);
   const [solvedRowsHistory, setSolvedRowsHistory] = useState<number[]>([]);
@@ -28,7 +29,16 @@ export const GameBoard = () => {
         const isCorrect = row.every(
           (num, i) => NUMBER_TO_LETTER[num] === NUMBER_TO_LETTER[solutionRow[i]]
         );
-        if (isCorrect) newFrozen.add(index);
+        if (isCorrect) {
+          newFrozen.add(index);
+          if (!prev.has(index)) {
+            setSolvedRowsOrder(current => {
+              const newOrder = new Map(current);
+              newOrder.set(index, newOrder.size);
+              return newOrder;
+            });
+          }
+        }
       });
       return newFrozen;
     });
@@ -48,6 +58,7 @@ export const GameBoard = () => {
       <ResponsiveGameLayout
         grid={grid}
         frozenRows={frozenRows}
+        solvedRowsOrder={solvedRowsOrder}
         moveCount={moveCount}
         showInstructions={showInstructions}
         onShowInstructions={() => setShowInstructions(true)}

@@ -9,6 +9,7 @@ interface GridCellProps {
   isFrozenRow: boolean;
   isFirstRow: boolean;
   isFirstCol: boolean;
+  solvedRowNumber: number;
   onFlip: (index: number, type: 'row' | 'col') => void;
   onDragStart: (
     x: number,
@@ -34,11 +35,11 @@ export const GridCell: React.FC<GridCellProps> = ({
   isFrozenRow,
   isFirstRow,
   isFirstCol,
+  solvedRowNumber,
   onFlip,
   onDragStart,
   dragState,
 }) => {
-  // Check if the cell is in the highlighted column or row
   const isHighlighted =
     dragState.isDragging &&
     ((dragState.direction === 'horizontal' &&
@@ -48,10 +49,21 @@ export const GridCell: React.FC<GridCellProps> = ({
 
   const getCellClass = () => {
     if (isFrozenRow) {
-      return 'bg-green-200 opacity-90'; // Frozen cells
+      switch (solvedRowNumber) {
+        case 1:
+          return 'bg-yellow-200 opacity-90';
+        case 2:
+          return 'bg-orange-200 opacity-90';
+        case 3:
+          return 'bg-green-200 opacity-90';
+        case 4:
+          return 'bg-purple-200 opacity-90';
+        default:
+          return 'bg-gray-200 opacity-90';
+      }
     }
     if (isHighlighted) {
-      return 'bg-blue-200 shadow-md'; // Highlighted columns or rows
+      return 'bg-blue-200 shadow-md';
     }
     return '';
   };
