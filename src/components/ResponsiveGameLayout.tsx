@@ -1,3 +1,4 @@
+// ResponsiveGameLayout.tsx
 import React, { useEffect, useState, useRef } from 'react';
 import { Grid } from '../types/types';
 import { GameHeader } from './GridHeader';
@@ -6,6 +7,7 @@ import { GameStats } from './GameStats';
 import HowToPlay from './HowToPlay';
 import { useTouchDragAndDrop } from '../hooks/useTouchDragAndDrop';
 import { THEME } from '../constants/gameConstants';
+import WinModal from './WinModal';
 
 interface ResponsiveGameLayoutProps {
   grid: Grid;
@@ -137,7 +139,6 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
                     isFrozenRow={frozenRows.has(rowIndex)}
                     isFirstRow={rowIndex === 0}
                     isFirstCol={colIndex === 0}
-                    solvedRowNumber={solvedRowsOrder.get(rowIndex) || 0}
                     onFlip={onFlip}
                     onDragStart={handleDragStart}
                     dragState={dragState}

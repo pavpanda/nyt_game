@@ -5,36 +5,29 @@ import { GAME_NUMBER, LINK } from '../constants/gameConstants';
 
 interface WinModalProps {
   onClose: () => void;
-  solvedRowsHistory: number[];
+  solvedRowsHistory: Record<number, number>;
 }
 
 const WinModal: React.FC<WinModalProps> = ({ onClose, solvedRowsHistory }) => {
   const emojiMapping: { [key: number]: string } = {
-    0: '⬜', // White Square
-    1: '🟨', // Yellow Square
-    2: '🟧', // Orange Square
-    3: '🟩', // Green Square
-    4: '🟪', // Purple Square
+    0: '🟨', // White Square
+    1: '🟧', // Yellow Square
+    2: '🟩', // Orange Square
+    3: '🟪', // Green Square
   };
 
-  // Count the number of times each state appears
-  const counts: { [key: number]: number } = solvedRowsHistory.reduce((acc, state) => {
-    acc[state] = (acc[state] || 0) + 1;
-    return acc;
-  }, {} as { [key: number]: number });
-
   // Create visualization string: "emoji count" separated by spaces
-  const visualizationString = Object.keys(counts)
+  const visualizationString = Object.keys(solvedRowsHistory)
     .map((state) => {
       const key = parseInt(state, 10);
       const emoji = emojiMapping[key] || '⬜';
-      const count = counts[key];
+      const count = solvedRowsHistory[key];
       return `${emoji} ${count}`;
     })
     .join(' ');
 
-  // Calculate total number of moves
-  const totalMoves = solvedRowsHistory.length;
+  // Calculate total number of moves as the maximum of the moves taken to solve any row
+  const totalMoves = Math.max(...Object.values(solvedRowsHistory));
 
   // Clipboard text includes Flip number, link, total moves, and visualization
   const clipboardText = `Flip #${GAME_NUMBER}\n${LINK}\n\nTotal Moves: ${totalMoves}\n${visualizationString}`;

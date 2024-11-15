@@ -1,3 +1,4 @@
+// GridCell.tsx
 import React from 'react';
 import { Cell } from './Cell';
 
@@ -9,7 +10,6 @@ interface GridCellProps {
   isFrozenRow: boolean;
   isFirstRow: boolean;
   isFirstCol: boolean;
-  solvedRowNumber: number;
   onFlip: (index: number, type: 'row' | 'col') => void;
   onDragStart: (
     x: number,
@@ -35,7 +35,6 @@ export const GridCell: React.FC<GridCellProps> = ({
   isFrozenRow,
   isFirstRow,
   isFirstCol,
-  solvedRowNumber,
   onFlip,
   onDragStart,
   dragState,
@@ -49,32 +48,17 @@ export const GridCell: React.FC<GridCellProps> = ({
 
   const getCellClass = () => {
     if (isFrozenRow) {
-      if (process.env.NODE_ENV === 'development') {
-        switch (solvedRowNumber) {
-          case 1:
-            return 'bg-yellow-200 opacity-90';
-          case 2:
-            return 'bg-orange-200 opacity-90';
-          case 3:
-            return 'bg-green-200 opacity-90';
-          case 4:
-            return 'bg-purple-200 opacity-90';
-          default:
-            return 'bg-gray-200 opacity-90';
-        }
-      } else {
-        switch (solvedRowNumber) {
-          case 0:
-            return 'bg-yellow-200 opacity-90';
-          case 1:
-            return 'bg-orange-200 opacity-90';
-          case 2:
-            return 'bg-green-200 opacity-90';
-          case 3:
-            return 'bg-purple-200 opacity-90';
-          default:
-            return 'bg-gray-200 opacity-90';
-        }
+      switch (rowIndex) {
+        case 0:
+          return 'bg-yellow-200 opacity-90';
+        case 1:
+          return 'bg-orange-200 opacity-90';
+        case 2:
+          return 'bg-green-200 opacity-90';
+        case 3:
+          return 'bg-purple-200 opacity-90';
+        default:
+          return 'bg-gray-200 opacity-90';
       }
     }
     if (isHighlighted) {
