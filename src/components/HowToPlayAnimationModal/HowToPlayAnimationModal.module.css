@@ -1,0 +1,77 @@
+/* src/components/HowToPlayAnimationModal/HowToPlayAnimationModal.module.css */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modalContent {
+  position: relative;
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 24px;
+  width: 90%;
+  max-width: 600px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.closeButton {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #6b7280;
+  transition: color 0.3s;
+}
+
+.closeButton:hover {
+  color: #374151;
+}
+
+.modalTitle {
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.animationContainer {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin: 0 auto;
+}
+
+.modalBody {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.headerSpacer {
+  height: 20px; /* Adjust the height as needed for spacing */
+}
+
+.instructions {
+  padding: 1rem;
+  margin-bottom: 75px;
+  margin-top: 20px;
+  background-color: #f3f4f6;
+  border-radius: 0.5rem;
+
+}
+
+.instructionText {
+  font-weight: bold;
+  text-align: left;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #374151;
+}

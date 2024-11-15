@@ -5,8 +5,10 @@ import { SOLUTION, NUMBER_TO_LETTER, SCRAMBLE } from '../constants/gameConstants
 import { useGridOperations } from '../hooks/useGridOperations';
 import ResponsiveGameLayout from './ResponsiveGameLayout';
 import WinModal from './WinModal';
+import HowToPlayAnimationModal from './HowToPlayAnimationModal/HowToPlayAnimationModal';
 
 const LOCAL_STORAGE_KEY = 'gameState';
+const HOW_TO_PLAY_SEEN_KEY = 'howToPlaySeen';
 
 interface SavedGameState {
   grid: Grid;
@@ -45,6 +47,7 @@ export const GameBoard: React.FC = () => {
   const [solvedRowsHistory, setSolvedRowsHistory] = useState<Record<number, number>>(
     () => initialState?.solvedRowsHistory || {}
   );
+  const [showHowToPlayAnimation, setShowHowToPlayAnimation] = useState<boolean>(false);
 
   const { handleFlip } = useGridOperations(
     grid,
@@ -95,6 +98,14 @@ export const GameBoard: React.FC = () => {
     }
   }, [frozenRows, solvedRowsHistory, grid.length]);
 
+  useEffect(() => {
+    const hasSeen = localStorage.getItem(HOW_TO_PLAY_SEEN_KEY);
+    if (!hasSeen) {
+      setShowHowToPlayAnimation(true);
+      localStorage.setItem(HOW_TO_PLAY_SEEN_KEY, 'true');
+    }
+  }, []);
+
   return (
     <>
       <ResponsiveGameLayout
@@ -116,6 +127,9 @@ export const GameBoard: React.FC = () => {
           onClose={() => setShowWinModal(false)}
           solvedRowsHistory={solvedRowsHistory}
         />
+      )}
+      {showHowToPlayAnimation && (
+        <HowToPlayAnimationModal onClose={() => setShowHowToPlayAnimation(false)} />
       )}
     </>
   );

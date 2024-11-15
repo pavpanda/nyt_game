@@ -8,6 +8,7 @@ import HowToPlay from './HowToPlay';
 import { useTouchDragAndDrop } from '../hooks/useTouchDragAndDrop';
 import { THEME } from '../constants/gameConstants';
 import WinModal from './WinModal';
+import HowToPlayAnimationModal from './HowToPlayAnimationModal/HowToPlayAnimationModal';
 
 interface ResponsiveGameLayoutProps {
   grid: Grid;
@@ -104,7 +105,7 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
         style={{
           height: headerHeight,
         }}
-        className="w-full flex justify-center"
+        className="w-full flex justify-center mb-8"
       >
         <GameHeader theme={THEME} onShowInstructions={onShowInstructions} />
       </div>
@@ -154,7 +155,7 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
         <GameStats moveCount={moveCount} completedRows={frozenRows.size} />
       </div>
 
-      {showInstructions && <HowToPlay onClose={onCloseInstructions} />}
+      {showInstructions && <HowToPlayAnimationModal onClose={onCloseInstructions} />}
     </div>
   );
 };
