@@ -162,10 +162,7 @@ const HowToPlayAnimationModal: React.FC<HowToPlayAnimationModalProps> = ({ onClo
         <h2 className={styles.modalTitle}>How to Play</h2>
         <div className={styles.instructions}>
           <p className={styles.instructionText}>
-            Arrange four rows of 4-letter themed words in alphabetical order. <br />
-            <br />
-            Words are only solved when they're in the correct row.
-          </p>
+            Arrange four rows of 4-letter themed words in alphabetical order.</p>
         </div>
         <div className={styles.animationContainer}>
           <div className={styles.gridWrapper}>
