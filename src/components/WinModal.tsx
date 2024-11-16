@@ -3,6 +3,7 @@ import NextFlipTimer from './NextFlipTimer';
 import { GAME_NUMBER, LINK, THEME } from '../constants/gameConstants';
 import { Share } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useAnalytics } from '../hooks/useAnalytics';
 
 interface WinModalProps {
   onClose: () => void;
@@ -10,6 +11,8 @@ interface WinModalProps {
 }
 
 const WinModal: React.FC<WinModalProps> = ({ onClose, solvedRowsHistory }) => {
+  const { trackEvent } = useAnalytics();
+  
   const emojiMapping: Record<number, string> = {
     0: '🟨🟨🟨🟨',
     1: '🟧🟧🟧🟧',
@@ -37,12 +40,31 @@ const WinModal: React.FC<WinModalProps> = ({ onClose, solvedRowsHistory }) => {
   const handleClipboardCopy = async (): Promise<void> => {
     try {
       await navigator.clipboard.writeText(clipboardText);
+      
+      // Add debug logs
+      console.log('GA Available:', typeof window.gtag !== 'undefined');
+      console.log('Tracking event: share_results');
+      
+      trackEvent('share_results', {
+        method: 'clipboard',
+        game_number: GAME_NUMBER,
+        total_moves: totalMoves,
+        theme: THEME
+      });
+      
       toast.success('Copied to clipboard!', {
-        duration: 2000,
-        position: 'top-center',
+          duration: 2000,
+          position: 'top-center',
       });
     } catch (err) {
       console.error('Failed to copy:', err);
+      // Track failed attempts
+      trackEvent('share_error', {
+        method: 'clipboard',
+        error: err instanceof Error ? err.message : 'Unknown error',
+        game_number: GAME_NUMBER,
+        theme: THEME
+      });
     }
   };
 
@@ -57,6 +79,7 @@ const WinModal: React.FC<WinModalProps> = ({ onClose, solvedRowsHistory }) => {
           title: 'My Flip Results',
           text: clipboardText,
         });
+
       } catch (err) {
         if (err instanceof Error && err.name !== 'AbortError') {
           console.error('Error sharing:', err);
