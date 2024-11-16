@@ -4,7 +4,7 @@ import { Toaster } from 'react-hot-toast';
 
 function App() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center font-serif">
       <GameBoard />
       <Toaster />
     </div>
