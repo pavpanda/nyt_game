@@ -4,10 +4,10 @@ export const GAME_NUMBER = 5;
 export const LINK = "www.flipisfun.com";
 
 export const NUMBER_TO_LETTER: { [key: number]: string } = {
-  1: 'b', 2: 'a', 3: 'l', 4: 'l',
-  5: 'f', 6: 'o', 7: 'u', 8: 'l',
-  9: 'g', 10: 'o', 11: 'a', 12: 'l',
-  13: 'p', 14: 'l', 15: 'a', 16: 'y'
+  1: 'B', 2: 'A', 3: 'L', 4: 'L',
+  5: 'F', 6: 'O', 7: 'U', 8: 'L',
+  9: 'G', 10: 'O', 11: 'A', 12: 'L',
+  13: 'P', 14: 'L', 15: 'A', 16: 'Y'
 };
 
 export const SOLUTION: Grid = [
