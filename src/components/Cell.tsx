@@ -90,7 +90,7 @@ export const Cell: React.FC<CellProps> = ({
 
       {/* Flip Button for Columns (First Row) */}
       {isFirstRow && (
-        <div className="absolute -top-6 inset-x-0 flex justify-center pointer-events-none">
+        <div className="absolute -top-6 inset-x-0 flex justify-center pointer-events-none flip-button-container">
           {/* Enable pointer events only on the FlipButton */}
           <div className="pointer-events-auto">
             <FlipButton
@@ -104,7 +104,7 @@ export const Cell: React.FC<CellProps> = ({
 
       {/* Flip Button for Rows (First Column) */}
       {isFirstCol && (
-        <div className="absolute inset-y-0 -left-6 flex items-center pointer-events-none">
+        <div className="absolute inset-y-0 -left-6 flex items-center pointer-events-none flip-button-container">
           {/* Enable pointer events only on the FlipButton */}
           <div className="pointer-events-auto">
             <FlipButton

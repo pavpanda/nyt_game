@@ -21,49 +21,120 @@ code {
 .transition-all {
   transition: all 0.3s ease-in-out;
 }
+/* src/styles/global.css */
 
 /* Horizontal Flip Animation for Rows */
 .flip-horizontal-animation {
+  -webkit-animation: flip-horizontal 0.6s forwards;
+  -moz-animation: flip-horizontal 0.6s forwards;
   animation: flip-horizontal 0.6s forwards;
+}
+
+@-webkit-keyframes flip-horizontal {
+  0% {
+    -webkit-transform: rotateY(0deg);
+            transform: rotateY(0deg);
+  }
+  50% {
+    -webkit-transform: rotateY(90deg);
+            transform: rotateY(90deg);
+  }
+  100% {
+    -webkit-transform: rotateY(0deg);
+            transform: rotateY(0deg);
+  }
+}
+
+@-moz-keyframes flip-horizontal {
+  0% {
+    -moz-transform: rotateY(0deg);
+            transform: rotateY(0deg);
+  }
+  50% {
+    -moz-transform: rotateY(90deg);
+            transform: rotateY(90deg);
+  }
+  100% {
+    -moz-transform: rotateY(0deg);
+            transform: rotateY(0deg);
+  }
 }
 
 @keyframes flip-horizontal {
   0% {
-    transform: rotateY(0deg);
+    -webkit-transform: rotateY(0deg);
+            transform: rotateY(0deg);
   }
   50% {
-    transform: rotateY(90deg);
+    -webkit-transform: rotateY(90deg);
+            transform: rotateY(90deg);
   }
   100% {
-    transform: rotateY(0deg);
+    -webkit-transform: rotateY(0deg);
+            transform: rotateY(0deg);
   }
 }
 
 /* Vertical Flip Animation for Columns */
 .flip-vertical-animation {
+  -webkit-animation: flip-vertical 0.6s forwards;
+  -moz-animation: flip-vertical 0.6s forwards;
   animation: flip-vertical 0.6s forwards;
+}
+
+@-webkit-keyframes flip-vertical {
+  0% {
+    -webkit-transform: rotateX(0deg);
+            transform: rotateX(0deg);
+  }
+  50% {
+    -webkit-transform: rotateX(90deg);
+            transform: rotateX(90deg);
+  }
+  100% {
+    -webkit-transform: rotateX(0deg);
+            transform: rotateX(0deg);
+  }
+}
+
+@-moz-keyframes flip-vertical {
+  0% {
+    -moz-transform: rotateX(0deg);
+            transform: rotateX(0deg);
+  }
+  50% {
+    -moz-transform: rotateX(90deg);
+            transform: rotateX(90deg);
+  }
+  100% {
+    -moz-transform: rotateX(0deg);
+            transform: rotateX(0deg);
+  }
 }
 
 @keyframes flip-vertical {
   0% {
-    transform: rotateX(0deg);
+    -webkit-transform: rotateX(0deg);
+            transform: rotateX(0deg);
   }
   50% {
-    transform: rotateX(90deg);
+    -webkit-transform: rotateX(90deg);
+            transform: rotateX(90deg);
   }
   100% {
-    transform: rotateX(0deg);
+    -webkit-transform: rotateX(0deg);
+            transform: rotateX(0deg);
   }
 }
 
 /* Smooth backface visibility */
 .flip-horizontal-animation,
 .flip-vertical-animation {
-  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+          backface-visibility: hidden;
 }
 
-/* Optional: Ensure FlipButtons are above other elements */
+/* Ensure FlipButtons are above other elements */
 .flip-button-container {
   z-index: 10;
 }
-
