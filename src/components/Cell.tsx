@@ -1,3 +1,4 @@
+// src/components/Cell.tsx
 import React from 'react';
 import { NUMBER_TO_LETTER } from '../constants/gameConstants';
 import { FlipButton } from './FlipButton';
@@ -18,6 +19,8 @@ interface CellProps {
     colIndex: number
   ) => void;
   highlightClass?: string;
+  isFlipping: boolean;
+  flipType?: 'row' | 'col'; // Determines the flip direction
 }
 
 export const Cell: React.FC<CellProps> = ({
@@ -31,6 +34,8 @@ export const Cell: React.FC<CellProps> = ({
   onFlip,
   onDragStart,
   highlightClass,
+  isFlipping,
+  flipType,
 }) => {
   const letter = NUMBER_TO_LETTER[num];
 
@@ -48,41 +53,64 @@ export const Cell: React.FC<CellProps> = ({
     }
   };
 
+  // Determine the appropriate animation class based on flip type
+  const flipAnimationClass = isFlipping
+    ? flipType === 'row'
+      ? 'flip-horizontal-animation'
+      : flipType === 'col'
+      ? 'flip-vertical-animation'
+      : ''
+    : '';
+
   return (
     <div
       data-row={rowIndex}
       data-col={colIndex}
       onMouseDown={handleMouseDown}
       onTouchStart={handleTouchStart}
-      className={`
-        relative
-        flex items-center justify-center
-        w-full h-full
-        rounded-lg
-        text-xl md:text-2xl font-bold
-        ${isFrozenRow ? 'cursor-not-allowed opacity-90' : 'cursor-pointer'}
-        ${highlightClass || 'bg-white'}
-        select-none touch-none
-        transition-all duration-200
-        ${!isFrozenRow && 'hover:bg-gray-100'}
-      `}
+      className="relative w-full h-full"
     >
-      {letter}
+      {/* Content with Flip Animation */}
+      <div
+        className={`absolute inset-0
+          flex items-center justify-center
+          rounded-lg
+          text-xl md:text-2xl font-bold
+          ${isFrozenRow ? 'cursor-not-allowed opacity-90' : 'cursor-pointer'}
+          ${highlightClass || 'bg-white'}
+          select-none touch-none
+          transition-all duration-200
+          ${!isFrozenRow ? 'hover:bg-gray-100' : ''}
+          ${flipAnimationClass}
+        `}
+      >
+        {letter}
+      </div>
+
+      {/* Flip Button for Columns (First Row) */}
       {isFirstRow && (
-        <div className="absolute -top-6 inset-x-0 flex justify-center">
-          <FlipButton
-            direction="col"
-            onClick={() => onFlip(colIndex, 'col')}
-          />
+        <div className="absolute -top-6 inset-x-0 flex justify-center pointer-events-none">
+          {/* Enable pointer events only on the FlipButton */}
+          <div className="pointer-events-auto">
+            <FlipButton
+              direction="col"
+              onClick={() => onFlip(colIndex, 'col')}
+            />
+          </div>
         </div>
       )}
+
+      {/* Flip Button for Rows (First Column) */}
       {isFirstCol && (
-        <div className="absolute inset-y-0 -left-6 flex items-center">
-          <FlipButton
-            direction="row"
-            onClick={() => onFlip(rowIndex, 'row')}
-            disabled={isFrozenRow}
-          />
+        <div className="absolute inset-y-0 -left-6 flex items-center pointer-events-none">
+          {/* Enable pointer events only on the FlipButton */}
+          <div className="pointer-events-auto">
+            <FlipButton
+              direction="row"
+              onClick={() => onFlip(rowIndex, 'row')}
+              disabled={isFrozenRow}
+            />
+          </div>
         </div>
       )}
     </div>

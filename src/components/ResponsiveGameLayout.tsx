@@ -1,4 +1,4 @@
-// ResponsiveGameLayout.tsx
+// src/components/ResponsiveGameLayout.tsx
 import React, { useEffect, useState, useRef } from 'react';
 import { Grid } from '../types/types';
 import { GameHeader } from './GridHeader';
@@ -55,6 +55,12 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
     CELL_SIZE.desktop
   );
 
+  // States to track which rows or columns are flipping
+  const [flippingRows, setFlippingRows] = useState<Set<number>>(new Set());
+  const [flippingCols, setFlippingCols] = useState<Set<number>>(new Set());
+
+  const FLIP_DURATION = 600; // Duration in milliseconds
+
   useEffect(() => {
     const updateDimensions = () => {
       const vh = window.innerHeight;
@@ -72,7 +78,8 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
       const baseHeaderHeight = vw < 768 ? 80 : 160;
 
       const widthScale = availableWidth / (baseGridSize + 60);
-      const heightScale = (availableHeight - baseHeaderHeight) / (baseGridSize + 60);
+      const heightScale =
+        (availableHeight - baseHeaderHeight) / (baseGridSize + 60);
 
       const newScale = Math.min(widthScale, heightScale, 1);
 
@@ -99,8 +106,33 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
     gapSize
   );
 
+  const handleFlip = (index: number, type: 'row' | 'col') => {
+    onFlip(index, type);
+
+    if (type === 'row') {
+      setFlippingRows((prev) => new Set(prev).add(index));
+      setTimeout(() => {
+        setFlippingRows((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(index);
+          return newSet;
+        });
+      }, FLIP_DURATION);
+    } else if (type === 'col') {
+      setFlippingCols((prev) => new Set(prev).add(index));
+      setTimeout(() => {
+        setFlippingCols((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(index);
+          return newSet;
+        });
+      }, FLIP_DURATION);
+    }
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen w-full md:px-8">
+      {/* Game Header */}
       <div
         style={{
           height: headerHeight,
@@ -110,6 +142,7 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
         <GameHeader theme={THEME} onShowInstructions={onShowInstructions} />
       </div>
 
+      {/* Grid Container */}
       <div className="relative mt-32 md:mt-8 flex justify-center">
         <div className="relative">
           <div
@@ -120,42 +153,61 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
               gridTemplateRows: `repeat(${grid.length}, ${adjustedCellSize}px)`,
               gap: `${gapSize}px`,
               position: 'relative',
+              perspective: '1000px', // Added perspective for 3D effect
             }}
           >
             {grid.map((row, rowIndex) =>
-              row.map((cell, colIndex) => (
-                <div
-                  key={`cell-${rowIndex}-${colIndex}`}
-                  style={{
-                    width: adjustedCellSize,
-                    height: adjustedCellSize,
-                    position: 'relative',
-                  }}
-                >
-                  <GridCell
-                    num={cell}
-                    rowIndex={rowIndex}
-                    colIndex={colIndex}
-                    isFrozen={frozenRows.has(rowIndex)}
-                    isFrozenRow={frozenRows.has(rowIndex)}
-                    isFirstRow={rowIndex === 0}
-                    isFirstCol={colIndex === 0}
-                    onFlip={onFlip}
-                    onDragStart={handleDragStart}
-                    dragState={dragState}
-                  />
-                </div>
-              ))
+              row.map((cell, colIndex) => {
+                const isFlipping =
+                  flippingRows.has(rowIndex) || flippingCols.has(colIndex);
+                const flipType: 'row' | 'col' | undefined = flippingRows.has(rowIndex)
+                  ? 'row'
+                  : flippingCols.has(colIndex)
+                  ? 'col'
+                  : undefined;
+                return (
+                  <div
+                    key={`cell-${rowIndex}-${colIndex}`}
+                    style={{
+                      width: adjustedCellSize,
+                      height: adjustedCellSize,
+                      position: 'relative',
+                      // Removed overflow: 'hidden' to allow FlipButtons to be visible
+                    }}
+                  >
+                    <GridCell
+                      num={cell}
+                      rowIndex={rowIndex}
+                      colIndex={colIndex}
+                      isFrozen={frozenRows.has(rowIndex)}
+                      isFrozenRow={frozenRows.has(rowIndex)}
+                      isFirstRow={rowIndex === 0}
+                      isFirstCol={colIndex === 0}
+                      onFlip={handleFlip}
+                      onDragStart={handleDragStart}
+                      dragState={dragState}
+                      isFlipping={isFlipping}
+                      flipType={flipType} // Pass the flipType prop
+                    />
+                  </div>
+                );
+              })
             )}
           </div>
         </div>
       </div>
 
+      {/* Game Stats */}
       <div className="mt-4 flex justify-center w-full">
         <GameStats moveCount={moveCount} completedRows={frozenRows.size} />
       </div>
 
-      {showInstructions && <HowToPlayAnimationModal onClose={onCloseInstructions} />}
+      {/* Instruction Modal */}
+      {showInstructions && (
+        <HowToPlayAnimationModal onClose={onCloseInstructions} />
+      )}
+
+      {/* Win Modal */}
     </div>
   );
 };

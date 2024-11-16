@@ -1,4 +1,4 @@
-// GridCell.tsx
+// src/components/GridCell.tsx
 import React from 'react';
 import { Cell } from './Cell';
 
@@ -25,6 +25,8 @@ interface GridCellProps {
     targetIndex: number | null;
     highlightedIndices: number[];
   };
+  isFlipping: boolean;
+  flipType?: 'row' | 'col'; // Determines the flip direction
 }
 
 export const GridCell: React.FC<GridCellProps> = ({
@@ -38,6 +40,8 @@ export const GridCell: React.FC<GridCellProps> = ({
   onFlip,
   onDragStart,
   dragState,
+  isFlipping,
+  flipType,
 }) => {
   const isHighlighted =
     dragState.isDragging &&
@@ -69,8 +73,7 @@ export const GridCell: React.FC<GridCellProps> = ({
 
   return (
     <div
-      className={`
-        rounded-lg 
+      className={`rounded-lg 
         transition-all 
         duration-200 
         ${getCellClass()}
@@ -92,6 +95,8 @@ export const GridCell: React.FC<GridCellProps> = ({
         onFlip={onFlip}
         onDragStart={onDragStart}
         highlightClass={getCellClass()}
+        isFlipping={isFlipping}
+        flipType={flipType} // Pass the flipType prop
       />
     </div>
   );
