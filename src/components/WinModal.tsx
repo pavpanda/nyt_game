@@ -27,7 +27,7 @@ const WinModal: React.FC<WinModalProps> = ({ onClose, solvedRowsHistory }) => {
     .join('\n');
 
   const totalMoves = Math.max(...Object.values(solvedRowsHistory));
-  const clipboardText = `Flip #${GAME_NUMBER}\n${LINK}\nDaily Flips released @ 9 am ET!\n\nTheme: ${THEME}\nTotal Moves: ${totalMoves}\n\n${visualizationString}`;
+  const clipboardText = `Flip #${GAME_NUMBER}\n${LINK}\nDaily @ 9 am ET!\n\nTheme: ${THEME}\nTotal Moves: ${totalMoves}\n\n${visualizationString}`;
 
   // Check if the Web Share API is available
   const isShareAvailable = typeof navigator !== 'undefined' && 
