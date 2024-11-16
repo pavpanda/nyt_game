@@ -1,13 +1,13 @@
 import { Grid, TouchDragState } from '../types/types';
 
-export const GAME_NUMBER = 4;
-export const LINK = "pavpanda.github.io/nyt_game";
+export const GAME_NUMBER = 5;
+export const LINK = "www.flipisfun.com";
 
 export const NUMBER_TO_LETTER: { [key: number]: string } = {
-  1: 'c', 2: 'o', 3: 'p', 4: 'y',
-  5: 'e', 6: 'c', 7: 'h', 8: 'o',
-  9: 'l', 10: 'o', 11: 'o', 12: 'p',
-  13: 'r', 14: 'e', 15: 'd', 16: 'o'
+  1: 'b', 2: 'a', 3: 'l', 4: 'l',
+  5: 'f', 6: 'o', 7: 'u', 8: 'l',
+  9: 'g', 10: 'o', 11: 'a', 12: 'l',
+  13: 'p', 14: 'l', 15: 'a', 16: 'y'
 };
 
 export const SOLUTION: Grid = [
@@ -18,13 +18,13 @@ export const SOLUTION: Grid = [
 ];
 
 export const SCRAMBLE = [
-  [9, 1, 15, 11],
   [10, 4, 16, 13],
   [7, 14, 8, 3],
   [2, 12, 5, 6],
+  [9, 1, 15, 11],
 ];
 
-export const THEME = "Again and again";
+export const THEME = "Sports";
 
 export const initialTouchState: TouchDragState = {
   active: false,

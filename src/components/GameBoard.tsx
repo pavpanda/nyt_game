@@ -1,4 +1,3 @@
-// GameBoard.tsx
 import React, { useState, useEffect } from 'react';
 import { Grid } from '../types/types';
 import { SOLUTION, NUMBER_TO_LETTER, SCRAMBLE } from '../constants/gameConstants';
@@ -9,6 +8,7 @@ import HowToPlayAnimationModal from './HowToPlayAnimationModal/HowToPlayAnimatio
 
 const LOCAL_STORAGE_KEY = 'gameState';
 const HOW_TO_PLAY_SEEN_KEY = 'howToPlaySeen';
+const LAST_LOGIN_KEY = 'lastLoginDate';
 
 interface SavedGameState {
   grid: Grid;
@@ -18,8 +18,40 @@ interface SavedGameState {
   solvedRowsHistory: Record<number, number>;
 }
 
+const isNewDay = (): boolean => {
+  const lastLogin = localStorage.getItem(LAST_LOGIN_KEY);
+  if (!lastLogin) return true;
+
+  const lastLoginDate = new Date(lastLogin);
+  const now = new Date();
+  
+  // Convert both dates to ET
+  const etOffset = -4; // EDT offset from UTC in hours
+  const lastLoginET = new Date(lastLoginDate.getTime() + etOffset * 60 * 60 * 1000);
+  const nowET = new Date(now.getTime() + etOffset * 60 * 60 * 1000);
+  
+  // Set time to 9 AM ET for comparison
+  const lastLoginDay = new Date(lastLoginET);
+  lastLoginDay.setHours(9, 0, 0, 0);
+  
+  const nowDay = new Date(nowET);
+  nowDay.setHours(9, 0, 0, 0);
+  
+  return nowDay > lastLoginDay;
+};
+
 export const GameBoard: React.FC = () => {
   const loadInitialState = (): SavedGameState | null => {
+    // Check if it's a new day after 9 AM ET
+    if (isNewDay()) {
+      localStorage.clear();
+      localStorage.setItem(LAST_LOGIN_KEY, new Date().toISOString());
+      return null;
+    }
+    
+    // Update last login time
+    localStorage.setItem(LAST_LOGIN_KEY, new Date().toISOString());
+    
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (saved) {
       try {
