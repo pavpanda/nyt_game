@@ -22,8 +22,6 @@ code {
   transition: all 0.3s ease-in-out;
 }
 
-/* src/styles/global.css */
-
 /* Horizontal Flip Animation for Rows */
 .flip-horizontal-animation {
   animation: flip-horizontal 0.6s forwards;
@@ -63,3 +61,9 @@ code {
 .flip-vertical-animation {
   backface-visibility: hidden;
 }
+
+/* Optional: Ensure FlipButtons are above other elements */
+.flip-button-container {
+  z-index: 10;
+}
+

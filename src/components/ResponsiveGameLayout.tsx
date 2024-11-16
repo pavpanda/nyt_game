@@ -207,7 +207,6 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
         <HowToPlayAnimationModal onClose={onCloseInstructions} />
       )}
 
-      {/* Win Modal */}
     </div>
   );
 };

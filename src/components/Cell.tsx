@@ -40,27 +40,28 @@ export const Cell: React.FC<CellProps> = ({
   const letter = NUMBER_TO_LETTER[num];
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (!isFrozenRow) {
+    if (!isFrozenRow && !isFrozen) {
       e.preventDefault();
       onDragStart(e.clientX, e.clientY, rowIndex, colIndex);
     }
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    if (!isFrozenRow) {
+    if (!isFrozenRow && !isFrozen) {
       const touch = e.touches[0];
       onDragStart(touch.clientX, touch.clientY, rowIndex, colIndex);
     }
   };
 
   // Determine the appropriate animation class based on flip type
-  const flipAnimationClass = isFlipping
-    ? flipType === 'row'
-      ? 'flip-horizontal-animation'
-      : flipType === 'col'
-      ? 'flip-vertical-animation'
-      : ''
-    : '';
+  const flipAnimationClass =
+    !isFrozenRow && !isFrozen && isFlipping
+      ? flipType === 'row'
+        ? 'flip-horizontal-animation'
+        : flipType === 'col'
+        ? 'flip-vertical-animation'
+        : ''
+      : '';
 
   return (
     <div
@@ -80,7 +81,7 @@ export const Cell: React.FC<CellProps> = ({
           ${highlightClass || 'bg-white'}
           select-none touch-none
           transition-all duration-200
-          ${!isFrozenRow ? 'hover:bg-gray-100' : ''}
+          ${!isFrozenRow && !isFrozen ? 'hover:bg-gray-100' : ''}
           ${flipAnimationClass}
         `}
       >
@@ -95,6 +96,7 @@ export const Cell: React.FC<CellProps> = ({
             <FlipButton
               direction="col"
               onClick={() => onFlip(colIndex, 'col')}
+              disabled={isFrozenRow || isFrozen}
             />
           </div>
         </div>
@@ -108,7 +110,7 @@ export const Cell: React.FC<CellProps> = ({
             <FlipButton
               direction="row"
               onClick={() => onFlip(rowIndex, 'row')}
-              disabled={isFrozenRow}
+              disabled={isFrozenRow || isFrozen}
             />
           </div>
         </div>
