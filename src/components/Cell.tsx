@@ -96,7 +96,7 @@ export const Cell: React.FC<CellProps> = ({
             <FlipButton
               direction="col"
               onClick={() => onFlip(colIndex, 'col')}
-              disabled={isFrozenRow || isFrozen}
+              disabled={false} // Always enabled for column flip buttons
             />
           </div>
         </div>
@@ -110,7 +110,7 @@ export const Cell: React.FC<CellProps> = ({
             <FlipButton
               direction="row"
               onClick={() => onFlip(rowIndex, 'row')}
-              disabled={isFrozenRow || isFrozen}
+              disabled={isFrozenRow} // Disable only if the row is frozen
             />
           </div>
         </div>

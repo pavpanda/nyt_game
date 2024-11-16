@@ -160,7 +160,9 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
               row.map((cell, colIndex) => {
                 const isFlipping =
                   flippingRows.has(rowIndex) || flippingCols.has(colIndex);
-                const flipType: 'row' | 'col' | undefined = flippingRows.has(rowIndex)
+                const flipType: 'row' | 'col' | undefined = flippingRows.has(
+                  rowIndex
+                )
                   ? 'row'
                   : flippingCols.has(colIndex)
                   ? 'col'
@@ -206,6 +208,8 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
       {showInstructions && (
         <HowToPlayAnimationModal onClose={onCloseInstructions} />
       )}
+
+      {/* Win Modal */}
     </div>
   );
 };
