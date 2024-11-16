@@ -86,7 +86,7 @@ const Screen3: React.FC<Screen3Props> = ({
 
   return (
     <div className={styles.screenContainer}>
-      <h3 className={styles.screenTitle}>When you solve a row, it'll stay solved/frozen!<br/><strong>It won't budge when you do more swaps/flips!</strong></h3>
+      <h3 className={styles.screenTitle}>When you solve a row, it'll stay solved/frozen!<strong>It won't budge when you do more swaps/flips!</strong></h3>
     </div>
   );
 };
