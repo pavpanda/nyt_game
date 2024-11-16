@@ -93,7 +93,7 @@ const Screen2: React.FC<Screen2Props> = ({
 
   return (
     <div className={styles.screenContainer}>
-      <h3 className={styles.screenTitle}>Click on outer buttons to flip rows/columns!</h3>
+      <h3 className={styles.screenTitle}>Click on outer buttons to flip rows/columns! This is useful for inserting letters into the right spot.</h3>
     </div>
   );
 };

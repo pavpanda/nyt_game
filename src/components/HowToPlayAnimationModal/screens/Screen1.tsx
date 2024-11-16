@@ -1,3 +1,5 @@
+// src/components/HowToPlayAnimationModal/screens/Screen1.tsx
+
 import React, { useEffect } from 'react';
 import styles from './Screen1.module.css';
 import { getFlipButtonPosition, getRowCenterPosition, getColumnCenterPosition } from '../HowToPlayAnimationModal';
@@ -40,23 +42,27 @@ const Screen1: React.FC<Screen1Props> = ({
     async () => {
       setHandColor('#6b7280');
       setHighlight({ type: 'row', index: 0 });
+      console.log('Highlight set to row 0');
       setHandPosition(getRowCenterPosition(0));
       await sleep(1000);
     },
     // Step 2: Turn hand blue
     async () => {
       setHandColor('#3b82f6');
+      console.log('Hand color changed to blue');
       await sleep(500);
     },
     // Step 3: Move hand to Row 3 center
     async () => {
       setHandPosition(getRowCenterPosition(2));
       setHighlight({ type: 'row', index: 2 });
+      console.log('Highlight set to row 2');
       await sleep(1000);
     },
     // Step 4: Swap Rows 1 and 3
     async () => {
       onSwapRows(0, 2);
+      console.log('Swapped rows 0 and 2');
       await sleep(1000);
     },
     // Step 5: Move hand to Column 2 center
@@ -64,22 +70,26 @@ const Screen1: React.FC<Screen1Props> = ({
       setHandColor('#6b7280');
       setHandPosition(getColumnCenterPosition(1));
       setHighlight({ type: 'col', index: 1 });
+      console.log('Highlight set to column 1');
       await sleep(1000);
     },
     // Step 6: Turn hand blue
     async () => {
       setHandColor('#3b82f6');
+      console.log('Hand color changed to blue');
       await sleep(500);
     },
     // Step 7: Move hand to Column 4 center
     async () => {
       setHandPosition(getColumnCenterPosition(3));
       setHighlight({ type: 'col', index: 3 });
+      console.log('Highlight set to column 3');
       await sleep(1000);
     },
     // Step 8: Swap Columns 2 and 4
     async () => {
       onSwapColumns(1, 3);
+      console.log('Swapped columns 1 and 3');
       await sleep(1000);
     },
   ];
@@ -106,7 +116,7 @@ const Screen1: React.FC<Screen1Props> = ({
 
   return (
     <div className={styles.screenContainer}>
-      <p className={styles.screenTitle}>Drag rows/columns to swap them!</p>
+      <p className={styles.screenTitle}>Drag rows/columns to swap them! This is useful for moving large portions of the grid around.</p>
     </div>
   );
 };

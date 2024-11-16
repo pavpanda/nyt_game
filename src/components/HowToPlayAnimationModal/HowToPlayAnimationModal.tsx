@@ -1,4 +1,6 @@
-import React, { useEffect, useState, useRef } from 'react';
+// src/components/HowToPlayAnimationModal/HowToPlayAnimationModal.tsx
+
+import React, { useEffect, useState } from 'react';
 import { useSwipeable } from 'react-swipeable';
 import { FaTimes } from 'react-icons/fa';
 import Screen1 from './screens/Screen1';
@@ -16,7 +18,7 @@ interface HowToPlayAnimationModalProps {
 
 type Grid = number[][];
 
-// [Previous constants remain the same]
+// Constants
 export const CELL_SIZE = 40;
 export const GAP_SIZE = 4;
 export const GRID_PADDING = 20;
@@ -26,34 +28,34 @@ export const FLIP_BUTTON_SIZE = 32;
 export const FLIP_BUTTON_OFFSET = FLIP_BUTTON_SIZE / 2;
 export const GRID_SIZE = 4 * CELL_SIZE + 3 * GAP_SIZE;
 
-// [Previous helper functions remain the same]
+// Helper Functions
 export const getFlipButtonPosition = (direction: 'row' | 'col', index: number) => {
   if (direction === 'row') {
     return {
-      top: GRID_PADDING + index * (CELL_SIZE + GAP_SIZE) + (CELL_SIZE / 2) - FLIP_BUTTON_OFFSET,
+      top: GRID_PADDING + index * (CELL_SIZE + GAP_SIZE) + CELL_SIZE / 2 - FLIP_BUTTON_OFFSET,
       left: -FLIP_BUTTON_SIZE - 8,
     };
   } else {
     return {
       top: -FLIP_BUTTON_SIZE - 8,
-      left: GRID_PADDING + index * (CELL_SIZE + GAP_SIZE) + (CELL_SIZE / 2) - FLIP_BUTTON_OFFSET,
+      left: GRID_PADDING + index * (CELL_SIZE + GAP_SIZE) + CELL_SIZE / 2 - FLIP_BUTTON_OFFSET,
     };
   }
 };
 
 export const getRowCenterPosition = (rowIndex: number) => ({
-  top: GRID_PADDING + rowIndex * (CELL_SIZE + GAP_SIZE) + (CELL_SIZE / 2) - HAND_OFFSET,
-  left: GRID_PADDING + (GRID_SIZE / 2) - HAND_OFFSET,
+  top: GRID_PADDING + rowIndex * (CELL_SIZE + GAP_SIZE) + CELL_SIZE / 2 - HAND_OFFSET,
+  left: GRID_PADDING + GRID_SIZE / 2 - HAND_OFFSET,
 });
 
 export const getColumnCenterPosition = (colIndex: number) => ({
-  top: GRID_PADDING + (GRID_SIZE / 2) - HAND_OFFSET,
-  left: GRID_PADDING + colIndex * (CELL_SIZE + GAP_SIZE) + (CELL_SIZE / 2) - HAND_OFFSET,
+  top: GRID_PADDING + GRID_SIZE / 2 - HAND_OFFSET,
+  left: GRID_PADDING + colIndex * (CELL_SIZE + GAP_SIZE) + CELL_SIZE / 2 - HAND_OFFSET,
 });
 
 export const getCellCenter = (rowIndex: number, colIndex: number) => ({
-  top: GRID_PADDING + rowIndex * (CELL_SIZE + GAP_SIZE) + (CELL_SIZE / 2) - HAND_OFFSET,
-  left: GRID_PADDING + colIndex * (CELL_SIZE + GAP_SIZE) + (CELL_SIZE / 2) - HAND_OFFSET,
+  top: GRID_PADDING + rowIndex * (CELL_SIZE + GAP_SIZE) + CELL_SIZE / 2 - HAND_OFFSET,
+  left: GRID_PADDING + colIndex * (CELL_SIZE + GAP_SIZE) + CELL_SIZE / 2 - HAND_OFFSET,
 });
 
 const initialGrid: Grid = [
@@ -64,7 +66,6 @@ const initialGrid: Grid = [
 ];
 
 const HowToPlayAnimationModal: React.FC<HowToPlayAnimationModalProps> = ({ onClose }) => {
-  // [Previous state declarations remain the same]
   const [grid, setGrid] = useState<Grid>(initialGrid);
   const [handPosition, setHandPosition] = useState<{ top: number; left: number }>({
     top: 0,
@@ -75,7 +76,7 @@ const HowToPlayAnimationModal: React.FC<HowToPlayAnimationModalProps> = ({ onClo
   const [currentScreen, setCurrentScreen] = useState<number>(0);
   const [frozenRows, setFrozenRows] = useState<Set<number>>(new Set());
 
-  // [Previous functions remain the same]
+  // Flip and Swap Functions
   const flipRow = (rowIndex: number) => {
     setGrid((prevGrid) => {
       const newGrid = [...prevGrid];
@@ -113,7 +114,7 @@ const HowToPlayAnimationModal: React.FC<HowToPlayAnimationModalProps> = ({ onClo
     });
   };
 
-  // [Previous handlers and effects remain the same]
+  // Swipe Handlers
   const handlers = useSwipeable({
     onSwipedLeft: () => {
       if (currentScreen < 2) setCurrentScreen(currentScreen + 1);
@@ -138,7 +139,7 @@ const HowToPlayAnimationModal: React.FC<HowToPlayAnimationModalProps> = ({ onClo
     if (currentScreen === 0) {
       setHandPosition(getRowCenterPosition(0));
       setHandColor('#6b7280');
-      setHighlight(null);
+      // Removed setHighlight(null) to allow Screen1 to manage highlight
     } else if (currentScreen === 1) {
       const buttonPos = getFlipButtonPosition('row', 2);
       setHandPosition(buttonPos);
@@ -161,7 +162,9 @@ const HowToPlayAnimationModal: React.FC<HowToPlayAnimationModalProps> = ({ onClo
         <h2 className={styles.modalTitle}>How to Play</h2>
         <div className={styles.instructions}>
           <p className={styles.instructionText}>
-            Arrange four rows of 4-letter themed words in alphabetical order. <br/><br/>Words are only solved when they're in the correct row.
+            Arrange four rows of 4-letter themed words in alphabetical order. <br />
+            <br />
+            Words are only solved when they're in the correct row.
           </p>
         </div>
         <div className={styles.animationContainer}>
