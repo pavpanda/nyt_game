@@ -105,7 +105,7 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
         style={{
           height: headerHeight,
         }}
-        className="w-full flex justify-center mb-8"
+        className="w-full flex justify-center mb-24"
       >
         <GameHeader theme={THEME} onShowInstructions={onShowInstructions} />
       </div>

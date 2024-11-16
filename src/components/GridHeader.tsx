@@ -13,5 +13,10 @@ export const GameHeader: React.FC<GameHeaderProps> = ({ theme, onShowInstruction
     >
       How to Play
     </button>
+    <div className="m-4">
+      <p className="text-sm md:text-base text-gray-700">Each <strong>row</strong> is a word related to the theme.</p>
+      <p className="text-sm md:text-base text-gray-700">The solved board is in <strong>alphabetical order</strong>.</p>
+      <p className="text-sm md:text-base text-gray-700">To solve a word, it has to be placed in the correct row.</p>
+    </div>
   </div>
 );
