@@ -42,19 +42,16 @@ export const useTouchDragAndDrop = (
     dragOffset: { x: 0, y: 0 },
   });
 
-  // Use refs to track the latest position without triggering re-renders
   const dragPositionRef = useRef({ x: 0, y: 0 });
   const rafRef = useRef<number>();
   
   const updateDragPosition = useCallback((x: number, y: number) => {
     dragPositionRef.current = { x, y };
     
-    // Cancel any existing animation frame
     if (rafRef.current) {
       cancelAnimationFrame(rafRef.current);
     }
     
-    // Schedule the state update in the next animation frame
     rafRef.current = requestAnimationFrame(() => {
       setDragState(prevState => {
         if (!prevState.isDragging || !prevState.startX || !prevState.startY) {
@@ -97,8 +94,18 @@ export const useTouchDragAndDrop = (
           const clampedCol = Math.max(0, Math.min(currentCol, maxColIndex));
           const clampedRow = Math.max(0, Math.min(currentRow, maxRowIndex));
 
+          // Calculate the vertical distance from the source row (for horizontal drags)
+          const rowDistance = Math.abs(prevState.sourceRow! - clampedRow);
+          // Calculate the horizontal distance from the source column (for vertical drags)
+          const colDistance = Math.abs(prevState.sourceCol! - clampedCol);
+          
+          // Allow for some deviation (1 cell) from the perfect alignment
+          const maxDeviation = 3;
+
           if (newDirection === 'horizontal') {
-            if (prevState.sourceRow !== clampedRow) return prevState;
+            // Only check if we're way off from the source row
+            if (rowDistance > maxDeviation) return prevState;
+            
             return {
               ...prevState,
               targetIndex: clampedCol,
@@ -107,9 +114,11 @@ export const useTouchDragAndDrop = (
               dragOffset: newDragOffset,
             };
           } else {
-            if (prevState.sourceCol !== clampedCol || frozenRows.has(clampedRow)) {
+            // Only check if we're way off from the source column
+            if (colDistance > maxDeviation || frozenRows.has(clampedRow)) {
               return prevState;
             }
+            
             return {
               ...prevState,
               targetIndex: clampedRow,
@@ -129,6 +138,7 @@ export const useTouchDragAndDrop = (
     });
   }, [grid, cellWidth, cellHeight, gapSize, frozenRows]);
 
+  // Rest of the code remains the same...
   const handleDragStart = useCallback(
     (x: number, y: number, rowIndex: number, colIndex: number) => {
       if (frozenRows.has(rowIndex)) return;
@@ -137,7 +147,6 @@ export const useTouchDragAndDrop = (
       const gridOffsetLeft = rect?.left ?? 0;
       const gridOffsetTop = rect?.top ?? 0;
   
-      // Add a small initial delay before setting isDragging to true
       setTimeout(() => {
         setDragState({
           sourceRow: rowIndex,
@@ -152,7 +161,7 @@ export const useTouchDragAndDrop = (
           highlightedIndices: [],
           dragOffset: { x: 0, y: 0 },
         });
-      }, 16); // One frame delay
+      }, 16);
     },
     [frozenRows, gridRef]
   );
@@ -160,7 +169,6 @@ export const useTouchDragAndDrop = (
   const handleDragEnd = useCallback(() => {
     if (!dragState.isDragging) return;
 
-    // Cancel any pending animation frame
     if (rafRef.current) {
       cancelAnimationFrame(rafRef.current);
     }
