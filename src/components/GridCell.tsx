@@ -2,6 +2,8 @@
 import React from 'react';
 import { Cell } from './Cell';
 import { FlipButton } from './FlipButton';
+import { checkWordPosition, getWordFromNumbers } from '../utils/solutionChecker';
+import { NUMBER_TO_LETTER } from '../constants/gameConstants';
 
 interface GridCellProps {
   num: number;
@@ -32,6 +34,9 @@ interface GridCellProps {
   };
   isFlipping: boolean;
   flipType?: 'row' | 'col';
+  currentGrid: number[][];
+  solution: number[][];
+  easyMode: boolean;
 }
 
 export const GridCell: React.FC<GridCellProps> = ({
@@ -47,6 +52,9 @@ export const GridCell: React.FC<GridCellProps> = ({
   dragState,
   isFlipping,
   flipType,
+  currentGrid,
+  solution,
+  easyMode,
 }) => {
   const isHighlighted =
     dragState.isDragging &&
@@ -56,6 +64,12 @@ export const GridCell: React.FC<GridCellProps> = ({
         dragState.highlightedIndices.includes(rowIndex)));
 
   const getCellClass = () => {
+    // First check if the cell is being highlighted during drag
+    if (isHighlighted) {
+      return 'bg-blue-200 shadow-md';
+    }
+
+    // If it's a frozen row, use the color scheme based on row index
     if (isFrozenRow) {
       switch (rowIndex) {
         case 0:
@@ -70,9 +84,24 @@ export const GridCell: React.FC<GridCellProps> = ({
           return 'bg-gray-200 opacity-90';
       }
     }
-    if (isHighlighted) {
-      return 'bg-blue-200 shadow-md';
+
+    // Check if the current row forms a valid word that appears anywhere in the solution
+    // but only in easy mode and when we have a complete row
+    if (easyMode && 
+        currentGrid[rowIndex]?.length === solution[0]?.length && 
+        !isFrozenRow) {
+      const position = checkWordPosition(
+        currentGrid[rowIndex],
+        rowIndex,
+        solution,
+        true
+      );
+      
+      if (position === 'wrong-position') {
+        return 'bg-gray-200'; // Gray background for correct word in wrong position
+      }
     }
+
     return '';
   };
 

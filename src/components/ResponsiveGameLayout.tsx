@@ -1,3 +1,4 @@
+// ResponsiveGameLayout.tsx
 import React, { useEffect, useState, useRef } from 'react';
 import { Grid } from '../types/types';
 import { GameHeader } from './GridHeader';
@@ -8,6 +9,9 @@ import { THEME } from '../constants/gameConstants';
 import WinModal from './WinModal';
 import HowToPlayAnimationModal from './HowToPlayAnimationModal/HowToPlayAnimationModal';
 import { FlipButton } from './FlipButton';
+import EasyModeToggle from './EasyModeToggle';
+
+const EASY_MODE_KEY = 'easyMode';
 
 interface ResponsiveGameLayoutProps {
   grid: Grid;
@@ -22,6 +26,7 @@ interface ResponsiveGameLayoutProps {
   setMoveCount: React.Dispatch<React.SetStateAction<number>>;
   showWinModal: boolean;
   onCloseWinModal: () => void;
+  solution: Grid;
 }
 
 interface DragState {
@@ -46,7 +51,13 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
   setMoveCount,
   showWinModal,
   onCloseWinModal,
+  solution
 }) => {
+  const [easyMode, setEasyMode] = useState<boolean>(() => {
+    const savedEasyMode = localStorage.getItem(EASY_MODE_KEY);
+    return savedEasyMode ? JSON.parse(savedEasyMode) : true;
+  });
+  
   const [headerHeight, setHeaderHeight] = useState(0);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
@@ -78,6 +89,10 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
     gridRef,
     gapSize
   );
+
+  useEffect(() => {
+    localStorage.setItem(EASY_MODE_KEY, JSON.stringify(easyMode));
+  }, [easyMode]);
 
   const handleFlip = (index: number, type: 'row' | 'col') => {
     onFlip(index, type);
@@ -155,25 +170,20 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
     let zIndex = 0;
     let transition = '';
 
-    // Don't animate frozen rows/cells
     if (frozenRows.has(rowIndex)) {
       return {};
     }
 
-    // Handle row swapping
     if (direction === 'vertical' && sourceRow !== null && targetIndex !== null) {
-      // Don't animate if either source or target is frozen
       if (frozenRows.has(sourceRow) || frozenRows.has(targetIndex)) {
         return {};
       }
 
       if (rowIndex === sourceRow) {
-        // Dragging source row
         transform = `translateY(${dragOffset.y}px)`;
         zIndex = 10;
         transition = 'transform 0.2s ease-out';
       } else if (rowIndex === targetIndex && sourceRow !== null) {
-        // Target row moves to source row's position
         const offsetY = (sourceRow - targetIndex) * cellDistance;
         transform = `translateY(${offsetY}px)`;
         zIndex = 5;
@@ -181,20 +191,16 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
       }
     }
 
-    // Handle column swapping
     if (direction === 'horizontal' && sourceCol !== undefined && targetIndex !== undefined) {
-      // For columns, we need to check if the current cell is in a frozen row
       if (frozenRows.has(rowIndex)) {
         return {};
       }
 
       if (colIndex === sourceCol) {
-        // Dragging source column
         transform = `translateX(${dragOffset.x}px)`;
         zIndex = 10;
         transition = 'transform 0.2s ease-out';
       } else if (colIndex === targetIndex && sourceCol !== null) {
-        // Target column moves to source column's position
         const offsetX = (sourceCol - targetIndex) * cellDistance;
         transform = `translateX(${offsetX}px)`;
         zIndex = 5;
@@ -221,7 +227,7 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
         <GameHeader theme={THEME} onShowInstructions={onShowInstructions} />
       </div>
 
-      <div className="relative mt-32 md:mt-8 flex justify-center">
+      <div className="relative mt-32 md:mt-8 flex flex-col items-center justify-center">
         <div className="relative">
           {/* Column Flip Buttons */}
           <div
@@ -326,6 +332,9 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
                       dragState={dragState}
                       isFlipping={isFlipping}
                       flipType={flipType}
+                      currentGrid={grid}
+                      solution={solution}
+                      easyMode={easyMode}
                     />
                   </div>
                 );
@@ -335,8 +344,14 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
         </div>
       </div>
 
-      <div className="mt-4 flex justify-center w-full">
-        <GameStats moveCount={moveCount} completedRows={frozenRows.size} />
+      <div className="mt-4 flex flex-row items-center gap-6 mt-4 md:mt-6 justify-center w-full">
+        <div className="flex items-center">
+          <GameStats moveCount={moveCount} completedRows={frozenRows.size} />
+        </div>
+        <div className="h-8 w-px bg-gray-300 dark:bg-gray-700" /> {/* Added vertical divider */}
+        <div className="flex items-center">
+          <EasyModeToggle easyMode={easyMode} setEasyMode={setEasyMode} />
+        </div>
       </div>
 
       {showInstructions && (

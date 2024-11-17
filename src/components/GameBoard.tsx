@@ -1,3 +1,4 @@
+// GameBoard.tsx
 import React, { useState, useEffect } from 'react';
 import { Grid } from '../types/types';
 import { SOLUTION, NUMBER_TO_LETTER, SCRAMBLE } from '../constants/gameConstants';
@@ -140,20 +141,23 @@ export const GameBoard: React.FC = () => {
 
   return (
     <>
-      <ResponsiveGameLayout
-        grid={grid}
-        frozenRows={frozenRows}
-        solvedRowsOrder={solvedRowsOrder}
-        moveCount={moveCount}
-        showInstructions={showInstructions}
-        onShowInstructions={() => setShowInstructions(true)}
-        onCloseInstructions={() => setShowInstructions(false)}
-        onFlip={handleFlip}
-        setGrid={setGrid}
-        setMoveCount={setMoveCount}
-        showWinModal={showWinModal}
-        onCloseWinModal={() => setShowWinModal(false)}
-      />
+      <div className="flex flex-col items-center gap-4">
+        <ResponsiveGameLayout
+          grid={grid}
+          frozenRows={frozenRows}
+          solvedRowsOrder={solvedRowsOrder}
+          moveCount={moveCount}
+          showInstructions={showInstructions}
+          onShowInstructions={() => setShowInstructions(true)}
+          onCloseInstructions={() => setShowInstructions(false)}
+          onFlip={handleFlip}
+          setGrid={setGrid}
+          setMoveCount={setMoveCount}
+          showWinModal={showWinModal}
+          onCloseWinModal={() => setShowWinModal(false)}
+          solution={SOLUTION}
+        />
+      </div>
       {showWinModal && (
         <WinModal
           onClose={() => setShowWinModal(false)}
