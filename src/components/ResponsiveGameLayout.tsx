@@ -162,57 +162,53 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
 
   const getTransformStyle = (rowIndex: number, colIndex: number): React.CSSProperties => {
     const { isDragging, direction, dragOffset, sourceRow, sourceCol, targetIndex } = dragState;
-
+  
     if (!isDragging || targetIndex === undefined) return {};
-
+  
     const cellDistance = adjustedCellSize + gapSize;
     let transform = '';
     let zIndex = 0;
-    let transition = '';
-
+    // Only apply transition when NOT actively dragging
+    let transition = isDragging ? 'none' : 'transform 0.2s ease-out';
+  
     if (frozenRows.has(rowIndex)) {
       return {};
     }
-
+  
     if (direction === 'vertical' && sourceRow !== null && targetIndex !== null) {
       if (frozenRows.has(sourceRow) || frozenRows.has(targetIndex)) {
         return {};
       }
-
+  
       if (rowIndex === sourceRow) {
         transform = `translateY(${dragOffset.y}px)`;
         zIndex = 10;
-        transition = 'transform 0.2s ease-out';
       } else if (rowIndex === targetIndex && sourceRow !== null) {
         const offsetY = (sourceRow - targetIndex) * cellDistance;
         transform = `translateY(${offsetY}px)`;
         zIndex = 5;
-        transition = 'transform 0.2s ease-out';
       }
     }
-
+  
     if (direction === 'horizontal' && sourceCol !== undefined && targetIndex !== undefined) {
       if (frozenRows.has(rowIndex)) {
         return {};
       }
-
+  
       if (colIndex === sourceCol) {
         transform = `translateX(${dragOffset.x}px)`;
         zIndex = 10;
-        transition = 'transform 0.2s ease-out';
       } else if (colIndex === targetIndex && sourceCol !== null) {
         const offsetX = (sourceCol - targetIndex) * cellDistance;
         transform = `translateX(${offsetX}px)`;
         zIndex = 5;
-        transition = 'transform 0.2s ease-out';
       }
     }
-
+  
     return {
       transform,
       zIndex,
-      transition,
-      ...(transform ? { willChange: 'transform' } : {}),
+      ...(transform ? { transition, willChange: isDragging ? 'transform' : 'auto' } : {}),
     };
   };
 

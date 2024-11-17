@@ -132,24 +132,27 @@ export const useTouchDragAndDrop = (
   const handleDragStart = useCallback(
     (x: number, y: number, rowIndex: number, colIndex: number) => {
       if (frozenRows.has(rowIndex)) return;
-
+  
       const rect = gridRef.current?.getBoundingClientRect();
       const gridOffsetLeft = rect?.left ?? 0;
       const gridOffsetTop = rect?.top ?? 0;
-
-      setDragState({
-        sourceRow: rowIndex,
-        sourceCol: colIndex,
-        isDragging: true,
-        direction: null,
-        targetIndex: null,
-        startX: x,
-        startY: y,
-        gridOffsetLeft,
-        gridOffsetTop,
-        highlightedIndices: [],
-        dragOffset: { x: 0, y: 0 },
-      });
+  
+      // Add a small initial delay before setting isDragging to true
+      setTimeout(() => {
+        setDragState({
+          sourceRow: rowIndex,
+          sourceCol: colIndex,
+          isDragging: true,
+          direction: null,
+          targetIndex: null,
+          startX: x,
+          startY: y,
+          gridOffsetLeft,
+          gridOffsetTop,
+          highlightedIndices: [],
+          dragOffset: { x: 0, y: 0 },
+        });
+      }, 16); // One frame delay
     },
     [frozenRows, gridRef]
   );
