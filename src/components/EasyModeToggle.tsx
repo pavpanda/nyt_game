@@ -1,4 +1,3 @@
-// EasyModeToggle.tsx
 import React from 'react';
 
 interface EasyModeToggleProps {
@@ -22,10 +21,10 @@ const EasyModeToggle: React.FC<EasyModeToggleProps> = ({ easyMode, setEasyMode }
         <span className="text-sm font-medium">Easy Mode</span>
       </div>
       
-      <div className="relative group">
+      <div className="relative">
         <button
           type="button"
-          className="p-1 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 rounded-full"
+          className="p-1 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 rounded-full group"
           aria-label="Easy mode information"
         >
           <svg 
@@ -42,12 +41,12 @@ const EasyModeToggle: React.FC<EasyModeToggleProps> = ({ easyMode, setEasyMode }
             <path d="M12 16v-4" />
             <path d="M12 8h.01" />
           </svg>
-        </button>
-        <div className="absolute bottom-full mb-2 hidden group-hover:block">
-          <div className="bg-black text-white text-xs rounded px-2 py-1 w-48 whitespace-normal">
-            When easy mode is on, words that are correct but in the wrong row will turn gray!
+          <div className="absolute hidden group-hover:block bottom-full right-full mb-2 mr-1">
+            <div className="bg-black text-white text-xs rounded px-2 py-1 w-48 whitespace-normal">
+              When easy mode is on, words that are correct but in the wrong row will turn gray!
+            </div>
           </div>
-        </div>
+        </button>
       </div>
     </div>
   );
