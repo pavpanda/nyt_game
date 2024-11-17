@@ -18,7 +18,7 @@ export const SCRAMBLE = [
   [9, 16, 4, 10],
 ];
 
-export const THEME = "Do, re, mi...";
+export const THEME = "Do, re, mi";
 
 export const SOLUTION: Grid = [
   [1, 2, 3, 4],
