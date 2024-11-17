@@ -222,7 +222,7 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
         style={{
           height: headerHeight,
         }}
-        className="w-full flex justify-center mb-12 md:mb-32"
+        className="w-full flex justify-center mb-16 md:mb-32"
       >
         <GameHeader theme={THEME} onShowInstructions={onShowInstructions} />
       </div>
@@ -344,7 +344,7 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
         </div>
       </div>
 
-      <div className="mt-4 flex flex-row items-center gap-6 mt-4 md:mt-6 justify-center w-full">
+      <div className="mt-4 flex flex-row items-center gap-6 mt-6 md:mt-6 justify-center w-full">
         <div className="flex items-center">
           <GameStats moveCount={moveCount} completedRows={frozenRows.size} />
         </div>
