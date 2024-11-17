@@ -1,6 +1,7 @@
 // src/components/GridCell.tsx
 import React from 'react';
 import { Cell } from './Cell';
+import { FlipButton } from './FlipButton';
 
 interface GridCellProps {
   num: number;
@@ -24,9 +25,13 @@ interface GridCellProps {
     direction: 'horizontal' | 'vertical' | null;
     targetIndex: number | null;
     highlightedIndices: number[];
+    dragOffset: {
+      x: number;
+      y: number;
+    };
   };
   isFlipping: boolean;
-  flipType?: 'row' | 'col'; // Determines the flip direction
+  flipType?: 'row' | 'col';
 }
 
 export const GridCell: React.FC<GridCellProps> = ({
@@ -72,18 +77,7 @@ export const GridCell: React.FC<GridCellProps> = ({
   };
 
   return (
-    <div
-      className={`rounded-lg 
-        transition-all 
-        duration-200 
-        ${getCellClass()}
-      `}
-      style={{
-        width: '100%',
-        height: '100%',
-        position: 'relative',
-      }}
-    >
+    <div className="relative w-full h-full">
       <Cell
         num={num}
         rowIndex={rowIndex}
@@ -96,7 +90,7 @@ export const GridCell: React.FC<GridCellProps> = ({
         onDragStart={onDragStart}
         highlightClass={getCellClass()}
         isFlipping={isFlipping}
-        flipType={flipType} // Pass the flipType prop
+        flipType={flipType}
       />
     </div>
   );

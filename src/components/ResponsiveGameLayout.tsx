@@ -1,14 +1,13 @@
-// src/components/ResponsiveGameLayout.tsx
 import React, { useEffect, useState, useRef } from 'react';
 import { Grid } from '../types/types';
 import { GameHeader } from './GridHeader';
 import { GridCell } from './GridCell';
 import { GameStats } from './GameStats';
-import HowToPlay from './HowToPlay';
 import { useTouchDragAndDrop } from '../hooks/useTouchDragAndDrop';
 import { THEME } from '../constants/gameConstants';
 import WinModal from './WinModal';
 import HowToPlayAnimationModal from './HowToPlayAnimationModal/HowToPlayAnimationModal';
+import { FlipButton } from './FlipButton';
 
 interface ResponsiveGameLayoutProps {
   grid: Grid;
@@ -23,6 +22,15 @@ interface ResponsiveGameLayoutProps {
   setMoveCount: React.Dispatch<React.SetStateAction<number>>;
   showWinModal: boolean;
   onCloseWinModal: () => void;
+}
+
+interface DragState {
+  isDragging: boolean;
+  direction?: 'vertical' | 'horizontal';
+  dragOffset: { x: number; y: number };
+  sourceRow?: number;
+  sourceCol?: number;
+  targetIndex?: number;
 }
 
 const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
@@ -55,11 +63,53 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
     CELL_SIZE.desktop
   );
 
-  // States to track which rows or columns are flipping
   const [flippingRows, setFlippingRows] = useState<Set<number>>(new Set());
   const [flippingCols, setFlippingCols] = useState<Set<number>>(new Set());
 
-  const FLIP_DURATION = 600; // Duration in milliseconds
+  const FLIP_DURATION = 600;
+
+  const { handleDragStart, dragState } = useTouchDragAndDrop(
+    grid,
+    frozenRows,
+    setGrid,
+    setMoveCount,
+    adjustedCellSize,
+    adjustedCellSize,
+    gridRef,
+    gapSize
+  );
+
+  const handleFlip = (index: number, type: 'row' | 'col') => {
+    onFlip(index, type);
+
+    if (type === 'row') {
+      setFlippingRows((prev) => {
+        const newSet = new Set(prev);
+        newSet.add(index);
+        return newSet;
+      });
+      setTimeout(() => {
+        setFlippingRows((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(index);
+          return newSet;
+        });
+      }, FLIP_DURATION);
+    } else if (type === 'col') {
+      setFlippingCols((prev) => {
+        const newSet = new Set(prev);
+        newSet.add(index);
+        return newSet;
+      });
+      setTimeout(() => {
+        setFlippingCols((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(index);
+          return newSet;
+        });
+      }, FLIP_DURATION);
+    }
+  };
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -95,65 +145,148 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
     return () => window.removeEventListener('resize', updateDimensions);
   }, []);
 
-  const { handleDragStart, dragState } = useTouchDragAndDrop(
-    grid,
-    frozenRows,
-    setGrid,
-    setMoveCount,
-    adjustedCellSize,
-    adjustedCellSize,
-    gridRef,
-    gapSize
-  );
+  const getTransformStyle = (rowIndex: number, colIndex: number): React.CSSProperties => {
+    const { isDragging, direction, dragOffset, sourceRow, sourceCol, targetIndex } = dragState;
 
-  const handleFlip = (index: number, type: 'row' | 'col') => {
-    onFlip(index, type);
+    if (!isDragging || targetIndex === undefined) return {};
 
-    if (type === 'row') {
-      setFlippingRows((prev) => new Set(prev).add(index));
-      setTimeout(() => {
-        setFlippingRows((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(index);
-          return newSet;
-        });
-      }, FLIP_DURATION);
-    } else if (type === 'col') {
-      setFlippingCols((prev) => new Set(prev).add(index));
-      setTimeout(() => {
-        setFlippingCols((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(index);
-          return newSet;
-        });
-      }, FLIP_DURATION);
+    const cellDistance = adjustedCellSize + gapSize;
+    let transform = '';
+    let zIndex = 0;
+    let transition = '';
+
+    // Don't animate frozen rows/cells
+    if (frozenRows.has(rowIndex)) {
+      return {};
     }
+
+    // Handle row swapping
+    if (direction === 'vertical' && sourceRow !== null && targetIndex !== null) {
+      // Don't animate if either source or target is frozen
+      if (frozenRows.has(sourceRow) || frozenRows.has(targetIndex)) {
+        return {};
+      }
+
+      if (rowIndex === sourceRow) {
+        // Dragging source row
+        transform = `translateY(${dragOffset.y}px)`;
+        zIndex = 10;
+        transition = 'transform 0.2s ease-out';
+      } else if (rowIndex === targetIndex && sourceRow !== null) {
+        // Target row moves to source row's position
+        const offsetY = (sourceRow - targetIndex) * cellDistance;
+        transform = `translateY(${offsetY}px)`;
+        zIndex = 5;
+        transition = 'transform 0.2s ease-out';
+      }
+    }
+
+    // Handle column swapping
+    if (direction === 'horizontal' && sourceCol !== undefined && targetIndex !== undefined) {
+      // For columns, we need to check if the current cell is in a frozen row
+      if (frozenRows.has(rowIndex)) {
+        return {};
+      }
+
+      if (colIndex === sourceCol) {
+        // Dragging source column
+        transform = `translateX(${dragOffset.x}px)`;
+        zIndex = 10;
+        transition = 'transform 0.2s ease-out';
+      } else if (colIndex === targetIndex && sourceCol !== null) {
+        // Target column moves to source column's position
+        const offsetX = (sourceCol - targetIndex) * cellDistance;
+        transform = `translateX(${offsetX}px)`;
+        zIndex = 5;
+        transition = 'transform 0.2s ease-out';
+      }
+    }
+
+    return {
+      transform,
+      zIndex,
+      transition,
+      ...(transform ? { willChange: 'transform' } : {}),
+    };
   };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen w-full md:px-8">
-      {/* Game Header */}
       <div
         style={{
           height: headerHeight,
         }}
-        className="w-full flex justify-center mb-12 md:mb-24"
+        className="w-full flex justify-center mb-12 md:mb-32"
       >
         <GameHeader theme={THEME} onShowInstructions={onShowInstructions} />
       </div>
 
-      {/* Grid Container */}
       <div className="relative mt-32 md:mt-8 flex justify-center">
         <div className="relative">
+          {/* Column Flip Buttons */}
+          <div
+            className="absolute -top-6 left-0 right-0 grid"
+            style={{
+              gridTemplateColumns: `repeat(${grid[0]?.length ?? 0}, ${adjustedCellSize}px)`,
+              gap: `${gapSize}px`,
+            }}
+          >
+            {grid[0]?.map((_, colIndex) => (
+              <div
+                key={`col-flip-${colIndex}`}
+                className="flex justify-center"
+              >
+                <FlipButton
+                  direction="col"
+                  onClick={() => handleFlip(colIndex, 'col')}
+                  disabled={false}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Row Flip Buttons */}
+          <div
+            className="absolute -left-6 top-0 bottom-0 flex flex-col"
+            style={{
+              gap: `${gapSize}px`,
+            }}
+          >
+            {grid.map((_, rowIndex) => (
+              <div
+                key={`row-flip-${rowIndex}`}
+                className="flex items-center"
+                style={{ height: adjustedCellSize }}
+              >
+                <FlipButton
+                  direction="row"
+                  onClick={() => handleFlip(rowIndex, 'row')}
+                  disabled={frozenRows.has(rowIndex)}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Main Grid */}
           <div
             className="grid"
             ref={gridRef}
             style={{
-              gridTemplateColumns: `repeat(${grid[0].length}, ${adjustedCellSize}px)`,
+              gridTemplateColumns: `repeat(${grid[0]?.length ?? 0}, ${adjustedCellSize}px)`,
               gridTemplateRows: `repeat(${grid.length}, ${adjustedCellSize}px)`,
               gap: `${gapSize}px`,
               position: 'relative',
-              perspective: '1000px', // Added perspective for 3D effect
+              perspective: '1000px',
+            }}
+            onMouseMove={(e) => {
+              if (dragState.isDragging) {
+                e.preventDefault();
+              }
+            }}
+            onTouchMove={(e) => {
+              if (dragState.isDragging) {
+                e.preventDefault();
+              }
             }}
           >
             {grid.map((row, rowIndex) =>
@@ -167,6 +300,9 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
                   : flippingCols.has(colIndex)
                   ? 'col'
                   : undefined;
+
+                const transformStyle = getTransformStyle(rowIndex, colIndex);
+
                 return (
                   <div
                     key={`cell-${rowIndex}-${colIndex}`}
@@ -174,7 +310,7 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
                       width: adjustedCellSize,
                       height: adjustedCellSize,
                       position: 'relative',
-                      // Removed overflow: 'hidden' to allow FlipButtons to be visible
+                      ...transformStyle,
                     }}
                   >
                     <GridCell
@@ -189,7 +325,7 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
                       onDragStart={handleDragStart}
                       dragState={dragState}
                       isFlipping={isFlipping}
-                      flipType={flipType} // Pass the flipType prop
+                      flipType={flipType}
                     />
                   </div>
                 );
@@ -199,17 +335,13 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
         </div>
       </div>
 
-      {/* Game Stats */}
       <div className="mt-4 flex justify-center w-full">
         <GameStats moveCount={moveCount} completedRows={frozenRows.size} />
       </div>
 
-      {/* Instruction Modal */}
       {showInstructions && (
         <HowToPlayAnimationModal onClose={onCloseInstructions} />
       )}
-
-      {/* Win Modal */}
     </div>
   );
 };

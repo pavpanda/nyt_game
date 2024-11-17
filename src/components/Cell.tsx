@@ -20,7 +20,7 @@ interface CellProps {
   ) => void;
   highlightClass?: string;
   isFlipping: boolean;
-  flipType?: 'row' | 'col'; // Determines the flip direction
+  flipType?: 'row' | 'col';
 }
 
 export const Cell: React.FC<CellProps> = ({
@@ -53,7 +53,6 @@ export const Cell: React.FC<CellProps> = ({
     }
   };
 
-  // Determine the appropriate animation class based on flip type
   const flipAnimationClass =
     !isFrozenRow && !isFrozen && isFlipping
       ? flipType === 'row'
@@ -67,12 +66,12 @@ export const Cell: React.FC<CellProps> = ({
     <div
       data-row={rowIndex}
       data-col={colIndex}
-      onMouseDown={handleMouseDown}
-      onTouchStart={handleTouchStart}
       className="relative w-full h-full"
     >
-      {/* Content with Flip Animation */}
+      {/* Cell Content */}
       <div
+        onMouseDown={handleMouseDown}
+        onTouchStart={handleTouchStart}
         className={`absolute inset-0
           flex items-center justify-center
           rounded-lg
@@ -87,34 +86,6 @@ export const Cell: React.FC<CellProps> = ({
       >
         {letter}
       </div>
-
-      {/* Flip Button for Columns (First Row) */}
-      {isFirstRow && (
-        <div className="absolute -top-6 inset-x-0 flex justify-center pointer-events-none flip-button-container">
-          {/* Enable pointer events only on the FlipButton */}
-          <div className="pointer-events-auto">
-            <FlipButton
-              direction="col"
-              onClick={() => onFlip(colIndex, 'col')}
-              disabled={false} // Always enabled for column flip buttons
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Flip Button for Rows (First Column) */}
-      {isFirstCol && (
-        <div className="absolute inset-y-0 -left-6 flex items-center pointer-events-none flip-button-container">
-          {/* Enable pointer events only on the FlipButton */}
-          <div className="pointer-events-auto">
-            <FlipButton
-              direction="row"
-              onClick={() => onFlip(rowIndex, 'row')}
-              disabled={isFrozenRow} // Disable only if the row is frozen
-            />
-          </div>
-        </div>
-      )}
     </div>
   );
 };

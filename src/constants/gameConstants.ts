@@ -1,14 +1,24 @@
 import { Grid, TouchDragState } from '../types/types';
 
-export const GAME_NUMBER = 5;
 export const LINK = "www.flipisfun.com";
 
+export const GAME_NUMBER = 5;
+
 export const NUMBER_TO_LETTER: { [key: number]: string } = {
-  1: 'B', 2: 'A', 3: 'L', 4: 'L',
-  5: 'F', 6: 'O', 7: 'U', 8: 'L',
-  9: 'G', 10: 'O', 11: 'A', 12: 'L',
-  13: 'P', 14: 'L', 15: 'A', 16: 'Y'
+  1: 'B', 2: 'E', 3: 'A', 4: 'T',
+  5: 'N', 6: 'O', 7: 'T', 8: 'E',
+  9: 'S', 10: 'O', 11: 'N', 12: 'G',
+  13: 'T', 14: 'U', 15: 'N', 16: 'E'
 };
+
+export const SCRAMBLE = [
+  [13, 1, 15, 11],
+  [7, 12, 14, 2],
+  [6, 5, 8, 3],
+  [9, 16, 4, 10],
+];
+
+export const THEME = "Do, re, mi...";
 
 export const SOLUTION: Grid = [
   [1, 2, 3, 4],
@@ -16,15 +26,6 @@ export const SOLUTION: Grid = [
   [9, 10, 11, 12],
   [13, 14, 15, 16]
 ];
-
-export const SCRAMBLE = [
-  [10, 4, 16, 13],
-  [7, 14, 8, 3],
-  [2, 12, 5, 6],
-  [9, 1, 15, 11],
-];
-
-export const THEME = "Sports";
 
 export const initialTouchState: TouchDragState = {
   active: false,

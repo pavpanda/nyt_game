@@ -1,3 +1,4 @@
+// src/hooks/useTouchDragAndDrop.ts
 import { useState, useCallback, useEffect } from 'react';
 import { Grid } from '../types/types';
 
@@ -12,6 +13,10 @@ interface DragState {
   gridOffsetLeft: number;
   gridOffsetTop: number;
   highlightedIndices: number[];
+  dragOffset: {
+    x: number;
+    y: number;
+  };
 }
 
 export const useTouchDragAndDrop = (
@@ -35,8 +40,13 @@ export const useTouchDragAndDrop = (
     gridOffsetLeft: 0,
     gridOffsetTop: 0,
     highlightedIndices: [],
+    dragOffset: { x: 0, y: 0 },
   });
 
+  /**
+   * Initializes the drag state when a drag starts.
+   * Prevents dragging from frozen rows.
+   */
   const handleDragStart = useCallback(
     (x: number, y: number, rowIndex: number, colIndex: number) => {
       if (frozenRows.has(rowIndex)) return; // Prevent starting drag from a frozen row
@@ -61,11 +71,16 @@ export const useTouchDragAndDrop = (
         gridOffsetLeft,
         gridOffsetTop,
         highlightedIndices: [],
+        dragOffset: { x: 0, y: 0 },
       });
     },
     [frozenRows, gridRef]
   );
 
+  /**
+   * Handles the movement during drag.
+   * Determines the direction and updates the target index for swapping.
+   */
   const handleGlobalMove = useCallback(
     (x: number, y: number) => {
       setDragState((prevState) => {
@@ -79,28 +94,36 @@ export const useTouchDragAndDrop = (
           return prevState;
         }
 
-        const deltaX = x - prevState.startX!;
-        const deltaY = y - prevState.startY!;
-        const threshold = 10;
+        const deltaX = x - prevState.startX;
+        const deltaY = y - prevState.startY;
+        const threshold = 10; // Minimum movement to determine direction
 
         let newDirection = prevState.direction;
+        let newDragOffset = { ...prevState.dragOffset };
 
+        // Determine drag direction based on movement threshold
         if (!prevState.direction) {
-          if (Math.abs(deltaX) > threshold || Math.abs(deltaY) > threshold) {
-            newDirection =
-              Math.abs(deltaX) > Math.abs(deltaY) ? 'horizontal' : 'vertical';
+          if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > threshold) {
+            newDirection = 'horizontal';
+          } else if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > threshold) {
+            newDirection = 'vertical';
           }
         }
 
         if (newDirection) {
+          newDragOffset = {
+            x: newDirection === 'horizontal' ? deltaX : 0,
+            y: newDirection === 'vertical' ? deltaY : 0,
+          };
+
           const totalCellWidth = cellWidth + gapSize;
           const totalCellHeight = cellHeight + gapSize;
 
           const relativeX = x - prevState.gridOffsetLeft;
           const relativeY = y - prevState.gridOffsetTop;
 
-          const currentCol = Math.floor(relativeX / totalCellWidth);
-          const currentRow = Math.floor(relativeY / totalCellHeight);
+          let currentCol = Math.floor(relativeX / totalCellWidth);
+          let currentRow = Math.floor(relativeY / totalCellHeight);
 
           const maxColIndex = grid[0].length - 1;
           const maxRowIndex = grid.length - 1;
@@ -110,6 +133,7 @@ export const useTouchDragAndDrop = (
 
           if (newDirection === 'horizontal') {
             if (prevState.sourceRow !== clampedRow) {
+              // Prevent dragging across different rows
               return prevState;
             }
             return {
@@ -117,12 +141,15 @@ export const useTouchDragAndDrop = (
               targetIndex: clampedCol,
               direction: newDirection,
               highlightedIndices: [prevState.sourceCol!, clampedCol],
+              dragOffset: newDragOffset,
             };
           } else {
             if (prevState.sourceCol !== clampedCol) {
+              // Prevent dragging across different columns
               return prevState;
             }
             if (frozenRows.has(clampedRow)) {
+              // Prevent targeting frozen rows
               return prevState;
             }
             return {
@@ -130,6 +157,7 @@ export const useTouchDragAndDrop = (
               targetIndex: clampedRow,
               direction: newDirection,
               highlightedIndices: [prevState.sourceRow!, clampedRow],
+              dragOffset: newDragOffset,
             };
           }
         }
@@ -137,12 +165,17 @@ export const useTouchDragAndDrop = (
         return {
           ...prevState,
           direction: newDirection,
+          dragOffset: newDragOffset,
         };
       });
     },
     [grid, cellWidth, cellHeight, gapSize, frozenRows]
   );
 
+  /**
+   * Handles the end of the drag.
+   * Performs the swap between source and target rows/columns.
+   */
   const handleDragEnd = useCallback(() => {
     if (!dragState.isDragging) return;
 
@@ -151,13 +184,12 @@ export const useTouchDragAndDrop = (
     if (direction === 'horizontal' && sourceCol !== null && targetIndex !== null) {
       if (sourceCol !== targetIndex) {
         const newGrid = grid.map((row, rowIndex) => {
+          if (frozenRows.has(rowIndex)) return row; // Do not modify frozen rows
           const newRow = [...row];
-          if (!frozenRows.has(rowIndex)) {
-            [newRow[sourceCol], newRow[targetIndex]] = [
-              newRow[targetIndex],
-              newRow[sourceCol],
-            ];
-          }
+          [newRow[sourceCol], newRow[targetIndex]] = [
+            newRow[targetIndex],
+            newRow[sourceCol],
+          ];
           return newRow;
         });
         setGrid(newGrid);
@@ -183,6 +215,7 @@ export const useTouchDragAndDrop = (
       }
     }
 
+    // Reset drag state after swapping
     setDragState({
       sourceRow: null,
       sourceCol: null,
@@ -194,6 +227,7 @@ export const useTouchDragAndDrop = (
       gridOffsetLeft: 0,
       gridOffsetTop: 0,
       highlightedIndices: [],
+      dragOffset: { x: 0, y: 0 },
     });
   }, [dragState, grid, setGrid, setMoveCount, frozenRows]);
 

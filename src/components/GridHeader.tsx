@@ -9,6 +9,7 @@ export const GameHeader: React.FC<GameHeaderProps> = ({ theme, onShowInstruction
     <h2 className="text-xl md:text-2xl text-gray-600 transition-all">Theme: {theme}</h2>
     
     <div className="m-4">
+      <p className="text-sm md:text-base text-gray-700"><span className="text-blue-400 font-bold">Flip</span> or <span className="text-blue-400 font-bold">swap</span> rows or columns.</p>
       <p className="text-sm md:text-base text-gray-700">Each <span className="text-blue-400 font-bold">row</span> is a word related to the theme.</p>
       <p className="text-sm md:text-base text-gray-700">The solved board is in <span className="text-blue-400 font-bold">alphabetical order</span>.</p>
       <p className="text-sm font-bold md:text-base text-blue-600">To solve a word, it must placed in the correct row.</p>
