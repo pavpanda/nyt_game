@@ -1,5 +1,4 @@
-// src/hooks/useTouchDragAndDrop.ts
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Grid } from '../types/types';
 
 interface DragState {
@@ -43,65 +42,32 @@ export const useTouchDragAndDrop = (
     dragOffset: { x: 0, y: 0 },
   });
 
-  /**
-   * Initializes the drag state when a drag starts.
-   * Prevents dragging from frozen rows.
-   */
-  const handleDragStart = useCallback(
-    (x: number, y: number, rowIndex: number, colIndex: number) => {
-      if (frozenRows.has(rowIndex)) return; // Prevent starting drag from a frozen row
-
-      let gridOffsetLeft = 0;
-      let gridOffsetTop = 0;
-
-      if (gridRef.current) {
-        const rect = gridRef.current.getBoundingClientRect();
-        gridOffsetLeft = rect.left;
-        gridOffsetTop = rect.top;
-      }
-
-      setDragState({
-        sourceRow: rowIndex,
-        sourceCol: colIndex,
-        isDragging: true,
-        direction: null,
-        targetIndex: null,
-        startX: x,
-        startY: y,
-        gridOffsetLeft,
-        gridOffsetTop,
-        highlightedIndices: [],
-        dragOffset: { x: 0, y: 0 },
-      });
-    },
-    [frozenRows, gridRef]
-  );
-
-  /**
-   * Handles the movement during drag.
-   * Determines the direction and updates the target index for swapping.
-   */
-  const handleGlobalMove = useCallback(
-    (x: number, y: number) => {
-      setDragState((prevState) => {
-        if (
-          !prevState.isDragging ||
-          prevState.startX === null ||
-          prevState.startY === null ||
-          prevState.sourceRow === null ||
-          prevState.sourceCol === null
-        ) {
+  // Use refs to track the latest position without triggering re-renders
+  const dragPositionRef = useRef({ x: 0, y: 0 });
+  const rafRef = useRef<number>();
+  
+  const updateDragPosition = useCallback((x: number, y: number) => {
+    dragPositionRef.current = { x, y };
+    
+    // Cancel any existing animation frame
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+    }
+    
+    // Schedule the state update in the next animation frame
+    rafRef.current = requestAnimationFrame(() => {
+      setDragState(prevState => {
+        if (!prevState.isDragging || !prevState.startX || !prevState.startY) {
           return prevState;
         }
 
-        const deltaX = x - prevState.startX;
-        const deltaY = y - prevState.startY;
-        const threshold = 10; // Minimum movement to determine direction
+        const deltaX = dragPositionRef.current.x - prevState.startX;
+        const deltaY = dragPositionRef.current.y - prevState.startY;
+        const threshold = 10;
 
         let newDirection = prevState.direction;
         let newDragOffset = { ...prevState.dragOffset };
 
-        // Determine drag direction based on movement threshold
         if (!prevState.direction) {
           if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > threshold) {
             newDirection = 'horizontal';
@@ -119,8 +85,8 @@ export const useTouchDragAndDrop = (
           const totalCellWidth = cellWidth + gapSize;
           const totalCellHeight = cellHeight + gapSize;
 
-          const relativeX = x - prevState.gridOffsetLeft;
-          const relativeY = y - prevState.gridOffsetTop;
+          const relativeX = dragPositionRef.current.x - prevState.gridOffsetLeft;
+          const relativeY = dragPositionRef.current.y - prevState.gridOffsetTop;
 
           let currentCol = Math.floor(relativeX / totalCellWidth);
           let currentRow = Math.floor(relativeY / totalCellHeight);
@@ -132,10 +98,7 @@ export const useTouchDragAndDrop = (
           const clampedRow = Math.max(0, Math.min(currentRow, maxRowIndex));
 
           if (newDirection === 'horizontal') {
-            if (prevState.sourceRow !== clampedRow) {
-              // Prevent dragging across different rows
-              return prevState;
-            }
+            if (prevState.sourceRow !== clampedRow) return prevState;
             return {
               ...prevState,
               targetIndex: clampedCol,
@@ -144,12 +107,7 @@ export const useTouchDragAndDrop = (
               dragOffset: newDragOffset,
             };
           } else {
-            if (prevState.sourceCol !== clampedCol) {
-              // Prevent dragging across different columns
-              return prevState;
-            }
-            if (frozenRows.has(clampedRow)) {
-              // Prevent targeting frozen rows
+            if (prevState.sourceCol !== clampedCol || frozenRows.has(clampedRow)) {
               return prevState;
             }
             return {
@@ -168,23 +126,48 @@ export const useTouchDragAndDrop = (
           dragOffset: newDragOffset,
         };
       });
+    });
+  }, [grid, cellWidth, cellHeight, gapSize, frozenRows]);
+
+  const handleDragStart = useCallback(
+    (x: number, y: number, rowIndex: number, colIndex: number) => {
+      if (frozenRows.has(rowIndex)) return;
+
+      const rect = gridRef.current?.getBoundingClientRect();
+      const gridOffsetLeft = rect?.left ?? 0;
+      const gridOffsetTop = rect?.top ?? 0;
+
+      setDragState({
+        sourceRow: rowIndex,
+        sourceCol: colIndex,
+        isDragging: true,
+        direction: null,
+        targetIndex: null,
+        startX: x,
+        startY: y,
+        gridOffsetLeft,
+        gridOffsetTop,
+        highlightedIndices: [],
+        dragOffset: { x: 0, y: 0 },
+      });
     },
-    [grid, cellWidth, cellHeight, gapSize, frozenRows]
+    [frozenRows, gridRef]
   );
 
-  /**
-   * Handles the end of the drag.
-   * Performs the swap between source and target rows/columns.
-   */
   const handleDragEnd = useCallback(() => {
     if (!dragState.isDragging) return;
+
+    // Cancel any pending animation frame
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+    }
 
     const { sourceRow, sourceCol, direction, targetIndex } = dragState;
 
     if (direction === 'horizontal' && sourceCol !== null && targetIndex !== null) {
       if (sourceCol !== targetIndex) {
         const newGrid = grid.map((row, rowIndex) => {
-          if (frozenRows.has(rowIndex)) return row; // Do not modify frozen rows
+          if (frozenRows.has(rowIndex)) return row;
           const newRow = [...row];
           [newRow[sourceCol], newRow[targetIndex]] = [
             newRow[targetIndex],
@@ -215,7 +198,6 @@ export const useTouchDragAndDrop = (
       }
     }
 
-    // Reset drag state after swapping
     setDragState({
       sourceRow: null,
       sourceCol: null,
@@ -234,13 +216,7 @@ export const useTouchDragAndDrop = (
   useEffect(() => {
     const onMouseMove = (e: MouseEvent) => {
       if (dragState.isDragging) {
-        handleGlobalMove(e.clientX, e.clientY);
-      }
-    };
-
-    const onMouseUp = () => {
-      if (dragState.isDragging) {
-        handleDragEnd();
+        updateDragPosition(e.clientX, e.clientY);
       }
     };
 
@@ -248,28 +224,29 @@ export const useTouchDragAndDrop = (
       if (dragState.isDragging) {
         e.preventDefault();
         const touch = e.touches[0];
-        handleGlobalMove(touch.clientX, touch.clientY);
+        updateDragPosition(touch.clientX, touch.clientY);
       }
     };
 
-    const onTouchEnd = () => {
-      if (dragState.isDragging) {
-        handleDragEnd();
+    const cleanup = () => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
       }
     };
 
     window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
+    window.addEventListener('mouseup', handleDragEnd);
     window.addEventListener('touchmove', onTouchMove, { passive: false });
-    window.addEventListener('touchend', onTouchEnd);
+    window.addEventListener('touchend', handleDragEnd);
 
     return () => {
+      cleanup();
       window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseup', onMouseUp);
+      window.removeEventListener('mouseup', handleDragEnd);
       window.removeEventListener('touchmove', onTouchMove);
-      window.removeEventListener('touchend', onTouchEnd);
+      window.removeEventListener('touchend', handleDragEnd);
     };
-  }, [dragState.isDragging, handleGlobalMove, handleDragEnd]);
+  }, [dragState.isDragging, updateDragPosition, handleDragEnd]);
 
   return {
     handleDragStart,
