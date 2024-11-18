@@ -3,13 +3,13 @@ import { Grid, TouchDragState } from '../types/types';
 export const LINK = "www.flipisfun.com";
 export const NUM_ROWS = 4;
 
-export const GAME_NUMBER = 6;
+export const GAME_NUMBER = 7;
 
 export const NUMBER_TO_LETTER: { [key: number]: string } = {
-  1: 'B', 2: 'E', 3: 'A', 4: 'T',
-  5: 'N', 6: 'O', 7: 'T', 8: 'E',
-  9: 'S', 10: 'O', 11: 'N', 12: 'G',
-  13: 'T', 14: 'U', 15: 'N', 16: 'E'
+  1: 'E', 2: 'V', 3: 'I', 4: 'L',
+  5: 'S', 6: 'P', 7: 'I', 8: 'T',
+  9: 'S', 10: 'T', 11: 'A', 12: 'R',
+  13: 'W', 14: 'O', 15: 'L', 16: 'F'
 };
 
 export const SCRAMBLE = [
@@ -19,7 +19,7 @@ export const SCRAMBLE = [
   [9, 16, 4, 10],
 ];
 
-export const THEME = "Do, re, mi";
+export const THEME = "Words that flip into words";
 
 export const SOLUTION: Grid = [
   [1, 2, 3, 4],
