@@ -1,6 +1,7 @@
 import { Grid, TouchDragState } from '../types/types';
 
 export const LINK = "www.flipisfun.com";
+export const NUM_ROWS = 4;
 
 export const GAME_NUMBER = 5;
 
