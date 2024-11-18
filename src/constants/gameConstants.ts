@@ -3,7 +3,7 @@ import { Grid, TouchDragState } from '../types/types';
 export const LINK = "www.flipisfun.com";
 export const NUM_ROWS = 4;
 
-export const GAME_NUMBER = 5;
+export const GAME_NUMBER = 6;
 
 export const NUMBER_TO_LETTER: { [key: number]: string } = {
   1: 'B', 2: 'E', 3: 'A', 4: 'T',
