@@ -1,4 +1,5 @@
 /* src/components/HowToPlayAnimationModal/HowToPlayAnimationModal.module.css */
+
 .modalOverlay {
   position: fixed;
   inset: 0;
@@ -7,6 +8,7 @@
   align-items: center;
   justify-content: center;
   z-index: 50;
+  
 }
 
 .modalContent {
@@ -15,9 +17,12 @@
   border-radius: 8px;
   padding: 24px;
   width: 90%;
-  max-width: 600px;
+  max-width: 800px; /* Increased max-width to accommodate navigation */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .closeButton {
@@ -40,32 +45,16 @@
   text-align: center;
   font-size: 24px;
   font-weight: bold;
-}
-
-.animationContainer {
-  position: relative;
-  width: 200px;
-  height: 200px;
-  margin: 0 auto;
-}
-
-.modalBody {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.headerSpacer {
-  height: 20px; /* Adjust the height as needed for spacing */
+  margin-bottom: 10px; /* Added margin for spacing */
 }
 
 .instructions {
   padding: 1rem;
-  margin-bottom: 75px;
-  margin-top: 20px;
+  margin-bottom: 20px; /* Reduced margin to fit within new layout */
   background-color: #f3f4f6;
   border-radius: 0.5rem;
-
+  width: 100%; /* Ensure instructions take full width */
+  box-sizing: border-box;
 }
 
 .instructionText {
@@ -74,4 +63,76 @@
   font-size: 1rem;
   line-height: 1.5;
   color: #374151;
+}
+
+.animationContainer {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin: 0 auto 20px auto; /* Added bottom margin for spacing */
+}
+
+.modalBody {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%; /* Ensure modalBody takes full width */
+  box-sizing: border-box;
+  margin-bottom: 70px;
+}
+
+.headerSpacer {
+  height: 20px; /* Adjust the height as needed for spacing */
+}
+
+.instructions {
+  padding: 1rem;
+  margin-bottom: 20px; /* Adjusted margin for better spacing */
+  margin-top: 20px;
+  background-color: #f3f4f6;
+  border-radius: 0.5rem;
+}
+
+.navigation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%; /* Ensure navigation takes full width */
+}
+
+.navButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin: 0 10px;
+  color: #6b7280;
+  transition: color 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navButton:hover {
+  color: #374151;
+}
+
+.navButton:disabled {
+  color: #d1d5db;
+  cursor: not-allowed;
+}
+
+.navigationDots {
+  display: flex;
+  gap: 5px;
+}
+
+.navigationDots .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #d1d5db;
+}
+
+.navigationDots .dot.active {
+  background-color: #3b82f6;
 }

@@ -1,8 +1,7 @@
 // src/components/HowToPlayAnimationModal/HowToPlayAnimationModal.tsx
 
-import React, { useEffect, useState } from 'react';
-import { useSwipeable } from 'react-swipeable';
-import { FaTimes } from 'react-icons/fa';
+import React, { useEffect, useState, useCallback } from 'react';
+import { FaTimes, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 import Screen1 from './screens/Screen1';
 import Screen2 from './screens/Screen2';
 import Screen3 from './screens/Screen3';
@@ -58,7 +57,22 @@ export const getCellCenter = (rowIndex: number, colIndex: number) => ({
   left: GRID_PADDING + colIndex * (CELL_SIZE + GAP_SIZE) + CELL_SIZE / 2 - HAND_OFFSET,
 });
 
-const initialGrid: Grid = [
+// Initial Grids for Each Screen
+export const initialGrid1: Grid = [
+  [6, 2, 9, 12],
+  [16, 1, 7, 8],
+  [3, 10, 11, 4],
+  [13, 14, 15, 5],
+];
+
+export const initialGrid2: Grid = [
+  [6, 2, 9, 12],
+  [16, 1, 7, 8],
+  [3, 10, 11, 4],
+  [13, 14, 15, 5],
+];
+
+export const initialGrid3: Grid = [
   [6, 2, 9, 12],
   [16, 1, 7, 8],
   [3, 10, 11, 4],
@@ -66,80 +80,123 @@ const initialGrid: Grid = [
 ];
 
 const HowToPlayAnimationModal: React.FC<HowToPlayAnimationModalProps> = ({ onClose }) => {
-  const [grid, setGrid] = useState<Grid>(initialGrid);
+  const [currentScreen, setCurrentScreen] = useState<number>(0);
+  const [grid, setGrid] = useState<Grid>(initialGrid1);
   const [handPosition, setHandPosition] = useState<{ top: number; left: number }>({
     top: 0,
     left: 0,
   });
   const [highlight, setHighlight] = useState<{ type: 'row' | 'col'; index: number } | null>(null);
   const [handColor, setHandColor] = useState<string>('#6b7280');
-  const [currentScreen, setCurrentScreen] = useState<number>(0);
-  const [frozenRows, setFrozenRows] = useState<Set<number>>(new Set());
+  const [frozenRows, setFrozenRows] = useState<number[]>([]);
 
   // Flip and Swap Functions
-  const flipRow = (rowIndex: number) => {
-    setGrid((prevGrid) => {
-      const newGrid = [...prevGrid];
-      newGrid[rowIndex] = [...newGrid[rowIndex]].reverse();
-      return newGrid;
-    });
-  };
-
-  const flipCol = (colIndex: number) => {
-    setGrid((prevGrid) => {
-      const newGrid = prevGrid.map((row) => [...row]);
-      const column = newGrid.map((row) => row[colIndex]).reverse();
-      newGrid.forEach((row, idx) => {
-        row[colIndex] = column[idx];
+  const flipRow = useCallback(
+    (rowIndex: number) => {
+      if (frozenRows.includes(rowIndex)) {
+        console.log(`Row ${rowIndex} is frozen and cannot be flipped.`);
+        return;
+      }
+      setGrid((prevGrid) => {
+        const newGrid = [...prevGrid];
+        newGrid[rowIndex] = [...newGrid[rowIndex]].reverse();
+        return newGrid;
       });
-      return newGrid;
-    });
-  };
+    },
+    [frozenRows]
+  );
 
-  const swapRows = (row1: number, row2: number) => {
-    setGrid((prevGrid) => {
-      const newGrid = [...prevGrid];
-      [newGrid[row1], newGrid[row2]] = [newGrid[row2], newGrid[row1]];
-      return newGrid;
-    });
-  };
+  const flipCol = useCallback(
+    (colIndex: number) => {
+      setGrid((prevGrid) => {
+        const newGrid = prevGrid.map((row) => [...row]);
+        const nonFrozenIndices = newGrid
+          .map((_, idx) => idx)
+          .filter((idx) => !frozenRows.includes(idx));
 
-  const swapColumns = (col1: number, col2: number) => {
-    setGrid((prevGrid) => {
-      const newGrid = prevGrid.map((row) => [...row]);
-      newGrid.forEach((row) => {
-        [row[col1], row[col2]] = [row[col2], row[col1]];
+        const columnValues = nonFrozenIndices.map((idx) => newGrid[idx][colIndex]);
+        const reversedColumn = [...columnValues].reverse();
+
+        nonFrozenIndices.forEach((idx, i) => {
+          newGrid[idx][colIndex] = reversedColumn[i];
+        });
+
+        return newGrid;
       });
-      return newGrid;
-    });
-  };
-
-  // Swipe Handlers
-  const handlers = useSwipeable({
-    onSwipedLeft: () => {
-      if (currentScreen < 2) setCurrentScreen(currentScreen + 1);
     },
-    onSwipedRight: () => {
-      if (currentScreen > 0) setCurrentScreen(currentScreen - 1);
-    },
-    trackMouse: true,
-  });
+    [frozenRows]
+  );
 
-  const handleScreenComplete = () => {
+  const swapRows = useCallback(
+    (row1: number, row2: number) => {
+      if (frozenRows.includes(row1) || frozenRows.includes(row2)) {
+        console.log(`One or both rows are frozen and cannot be swapped.`);
+        return;
+      }
+      setGrid((prevGrid) => {
+        const newGrid = [...prevGrid];
+        [newGrid[row1], newGrid[row2]] = [newGrid[row2], newGrid[row1]];
+        return newGrid;
+      });
+    },
+    [frozenRows]
+  );
+
+  const swapColumns = useCallback(
+    (col1: number, col2: number) => {
+      setGrid((prevGrid) => {
+        const newGrid = prevGrid.map((row) => [...row]);
+        newGrid.forEach((row, idx) => {
+          if (!frozenRows.includes(idx)) {
+            [row[col1], row[col2]] = [row[col2], row[col1]];
+          }
+        });
+        return newGrid;
+      });
+    },
+    [frozenRows]
+  );
+
+  // Navigation Handlers
+  const handleNext = useCallback(() => {
     if (currentScreen < 2) {
-      setCurrentScreen(currentScreen + 1);
-    } else {
-      setGrid(initialGrid);
-      setFrozenRows(new Set());
-      setCurrentScreen(0);
+      setCurrentScreen((prev) => prev + 1);
     }
-  };
+  }, [currentScreen]);
 
+  const handlePrev = useCallback(() => {
+    if (currentScreen > 0) {
+      setCurrentScreen((prev) => prev - 1);
+    }
+  }, [currentScreen]);
+
+  // Update Grid and Frozen Rows based on current screen
+  useEffect(() => {
+    switch (currentScreen) {
+      case 0:
+        setGrid(initialGrid1);
+        setFrozenRows([]);
+        break;
+      case 1:
+        setGrid(initialGrid2);
+        setFrozenRows([]);
+        break;
+      case 2:
+        setGrid(initialGrid3);
+        setFrozenRows([]); // Example: Freeze row index 2 at start of Screen3
+        break;
+      default:
+        setGrid(initialGrid1);
+        setFrozenRows([]);
+    }
+  }, [currentScreen]);
+
+  // Update Hand Position and Highlight based on current screen
   useEffect(() => {
     if (currentScreen === 0) {
       setHandPosition(getRowCenterPosition(0));
       setHandColor('#6b7280');
-      // Removed setHighlight(null) to allow Screen1 to manage highlight
+      setHighlight(null);
     } else if (currentScreen === 1) {
       const buttonPos = getFlipButtonPosition('row', 2);
       setHandPosition(buttonPos);
@@ -155,44 +212,11 @@ const HowToPlayAnimationModal: React.FC<HowToPlayAnimationModalProps> = ({ onClo
 
   return (
     <div className={styles.modalOverlay}>
-      <div className={styles.modalContent} {...handlers}>
+      <div className={styles.modalContent}>
         <button onClick={onClose} className={styles.closeButton} aria-label="Close">
           <FaTimes size={20} />
         </button>
         <h2 className={styles.modalTitle}>How to Play</h2>
-        <div className={styles.instructions}>
-          <p className={styles.instructionText}>
-            Arrange four rows of 4-letter themed words in alphabetical order.</p>
-        </div>
-        <div className={styles.animationContainer}>
-          <div className={styles.gridWrapper}>
-            {/* Flip Buttons for Rows */}
-            {Array.from({ length: 4 }).map((_, rowIndex) => (
-              <FlipButton
-                key={`flip-row-${rowIndex}`}
-                direction="row"
-                index={rowIndex}
-                onClick={() => flipRow(rowIndex)}
-              />
-            ))}
-
-            {/* Flip Buttons for Columns */}
-            {Array.from({ length: 4 }).map((_, colIndex) => (
-              <FlipButton
-                key={`flip-col-${colIndex}`}
-                direction="col"
-                index={colIndex}
-                onClick={() => flipCol(colIndex)}
-              />
-            ))}
-
-            {/* Animation Grid */}
-            <AnimationGrid grid={grid} highlight={highlight} frozenRows={frozenRows} />
-
-            {/* Animated Hand */}
-            <HandIcon position={handPosition} color={handColor} />
-          </div>
-        </div>
         <div className={styles.modalBody}>
           {currentScreen === 0 && (
             <Screen1
@@ -207,7 +231,8 @@ const HowToPlayAnimationModal: React.FC<HowToPlayAnimationModalProps> = ({ onClo
               setHandColor={setHandColor}
               setHandPosition={setHandPosition}
               setHighlight={setHighlight}
-              onComplete={handleScreenComplete}
+              setGrid={setGrid} // Pass setGrid directly
+              setFrozenRows={setFrozenRows} // Pass setFrozenRows directly
             />
           )}
           {currentScreen === 1 && (
@@ -221,7 +246,8 @@ const HowToPlayAnimationModal: React.FC<HowToPlayAnimationModalProps> = ({ onClo
               setHandColor={setHandColor}
               setHandPosition={setHandPosition}
               setHighlight={setHighlight}
-              onComplete={handleScreenComplete}
+              setGrid={setGrid} // Pass setGrid directly
+              setFrozenRows={setFrozenRows} // Pass setFrozenRows directly
             />
           )}
           {currentScreen === 2 && (
@@ -237,11 +263,60 @@ const HowToPlayAnimationModal: React.FC<HowToPlayAnimationModalProps> = ({ onClo
               setHighlight={setHighlight}
               frozenRows={frozenRows}
               setFrozenRows={setFrozenRows}
-              onComplete={handleScreenComplete}
+              setGrid={setGrid} // Pass setGrid directly
             />
           )}
         </div>
-        <NavigationDots total={3} current={currentScreen} />
+        <div className={styles.animationContainer}>
+          <div className={styles.gridWrapper}>
+            {/* Flip Buttons for Rows */}
+            {Array.from({ length: 4 }).map((_, rowIndex) => (
+              <FlipButton
+                key={`flip-row-${rowIndex}`}
+                direction="row"
+                index={rowIndex}
+                onClick={() => flipRow(rowIndex)}
+                disabled={frozenRows.includes(rowIndex)} // Disable button if row is frozen
+              />
+            ))}
+
+            {/* Flip Buttons for Columns */}
+            {Array.from({ length: 4 }).map((_, colIndex) => (
+              <FlipButton
+                key={`flip-col-${colIndex}`}
+                direction="col"
+                index={colIndex}
+                onClick={() => flipCol(colIndex)}
+                disabled={false}
+              />
+            ))}
+
+            {/* Animation Grid */}
+            <AnimationGrid grid={grid} highlight={highlight} frozenRows={frozenRows} />
+
+            {/* Animated Hand */}
+            <HandIcon position={handPosition} color={handColor} />
+          </div>
+        </div>
+        <div className={styles.navigation}>
+          <button
+            onClick={handlePrev}
+            className={styles.navButton}
+            disabled={currentScreen === 0}
+            aria-label="Previous Screen"
+          >
+            <FaArrowLeft size={16} />
+          </button>
+          <NavigationDots total={3} current={currentScreen} />
+          <button
+            onClick={handleNext}
+            className={styles.navButton}
+            disabled={currentScreen === 2}
+            aria-label="Next Screen"
+          >
+            <FaArrowRight size={16} />
+          </button>
+        </div>
       </div>
     </div>
   );

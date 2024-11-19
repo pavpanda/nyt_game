@@ -1,4 +1,3 @@
-// src/components/HowToPlayAnimationModal/NavigationDots.tsx
 import React from 'react';
 import styles from './NavigationDots.module.css';
 
@@ -13,8 +12,8 @@ const NavigationDots: React.FC<NavigationDotsProps> = ({ total, current }) => {
       {Array.from({ length: total }).map((_, index) => (
         <span
           key={`dot-${index}`}
-          className={`${styles.dot} ${index === current ? styles.active : ''}`}
-        ></span>
+          className={`${styles.dot} ${current === index ? styles.active : ''}`}
+        />
       ))}
     </div>
   );

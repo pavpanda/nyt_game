@@ -28,7 +28,22 @@
 }
 
 .frozen {
-  background-color: #10b981; /* Tailwind green-500 */
-  color: white;
-  cursor: not-allowed;
+  background-color: #86efac;
+  transition: background-color 0.3s ease;
+}
+
+.frozen-row-0 {
+  background-color: yellow;
+}
+
+.frozen-row-1 {
+  background-color: orange;
+}
+
+.frozen-row-2 {
+  background-color: green;
+}
+
+.frozen-row-3 {
+  background-color: purple;
 }
