@@ -10,6 +10,10 @@ interface HowToPlayFlipButtonProps {
   disabled: boolean;
 }
 
+const doNothing = () => {
+  return
+}
+
 const HowToPlayFlipButton: React.FC<HowToPlayFlipButtonProps> = ({ direction, index, onClick, disabled}) => {
   const Icon = direction === 'row' ? FaArrowsAltH : FaArrowsAltV;
   const label = direction === 'row' ? `Flip Row ${index + 1}` : `Flip Column ${index + 1}`;
@@ -17,7 +21,7 @@ const HowToPlayFlipButton: React.FC<HowToPlayFlipButtonProps> = ({ direction, in
 
   return (
     <button
-      onClick={onClick}
+      onClick={doNothing}
       className={`${styles.flipButton} ${positionClass}`}
       aria-label={label}
       disabled={disabled}

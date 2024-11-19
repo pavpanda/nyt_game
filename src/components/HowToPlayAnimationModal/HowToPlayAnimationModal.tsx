@@ -192,7 +192,7 @@ const HowToPlayAnimationModal: React.FC<HowToPlayAnimationModalProps> = ({ onClo
         break;
       case 3:
         setGrid(initialGrid3);
-        setFrozenRows([1]); // Example: Freeze row index 1 at start of Screen3
+        setFrozenRows([]); // **Changed from [1] to []**
         break;
       case 4:
         setGrid(initialGrid4);
