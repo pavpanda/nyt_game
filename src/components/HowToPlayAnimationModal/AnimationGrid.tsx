@@ -9,14 +9,26 @@ interface AnimationGridProps {
 }
 
 const NUMBER_TO_LETTER: { [key: number]: string } = {
-  1: 'A', 2: 'B', 3: 'C', 4: 'D', 5: 'E', 6: 'F', 7: 'G', 8: 'H',
-  9: 'I', 10: 'J', 11: 'K', 12: 'L', 13: 'M', 14: 'N', 15: 'O', 16: 'P',
+  1: 'B',
+  2: 'E',
+  3: 'A',
+  4: 'R',
+  5: 'F',
+  6: 'I',
+  7: 'S',
+  8: 'H',
+  9: 'N',
+  10: 'E',
+  11: 'W',
+  12: 'T',
+  13: 'W',
+  14: 'O',
+  15: 'L',
+  16: 'F',
 };
 
 const AnimationGrid: React.FC<AnimationGridProps> = ({ grid, highlight, frozenRows }) => {
-  const getIsFrozen = (rowIndex: number): boolean => {
-    return frozenRows.includes(rowIndex);
-  };
+  const isRowFrozen = (rowIndex: number): boolean => frozenRows.includes(rowIndex);
 
   return (
     <motion.div className={styles.grid} layout>
@@ -27,21 +39,14 @@ const AnimationGrid: React.FC<AnimationGridProps> = ({ grid, highlight, frozenRo
             ((highlight.type === 'row' && highlight.index === rowIndex) ||
               (highlight.type === 'col' && highlight.index === colIndex));
 
-          const isFrozen = getIsFrozen(rowIndex);
-          const frozenClass = isFrozen ? styles[`frozen-row-${rowIndex}`] : '';
+          const frozenClass = isRowFrozen(rowIndex) ? styles[`frozen-row-${rowIndex}`] : '';
 
           return (
             <motion.div
               key={`anim-cell-${rowIndex}-${colIndex}`}
               className={`${styles.gridCell} ${isHighlighted ? styles.highlight : ''} ${frozenClass}`}
               layout
-              animate={{
-                backgroundColor: isFrozen 
-                  ? '#f3f3f3' 
-                  : isHighlighted 
-                    ? '#e3f2fd' 
-                    : '#ffffff'
-              }}
+              // Removed the backgroundColor animation to rely on CSS classes
               transition={{ duration: 0.3 }}
             >
               {NUMBER_TO_LETTER[cell]}

@@ -2,9 +2,11 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { FaTimes, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
+import Screen0 from './screens/Screen0'; // Import Screen0
 import Screen1 from './screens/Screen1';
 import Screen2 from './screens/Screen2';
 import Screen3 from './screens/Screen3';
+import Screen4 from './screens/Screen4'; // Import Screen4
 import NavigationDots from './NavigationDots';
 import AnimationGrid from './AnimationGrid';
 import FlipButton from './HowToPlayFlipButton';
@@ -77,6 +79,13 @@ export const initialGrid3: Grid = [
   [16, 1, 7, 8],
   [3, 10, 11, 4],
   [13, 14, 15, 5],
+];
+
+export const initialGrid4: Grid = [
+  [15, 10, 11, 8],
+  [3, 2, 1, 4],
+  [7, 14, 5, 16],
+  [13, 6, 9, 12],
 ];
 
 const HowToPlayAnimationModal: React.FC<HowToPlayAnimationModalProps> = ({ onClose }) => {
@@ -159,7 +168,7 @@ const HowToPlayAnimationModal: React.FC<HowToPlayAnimationModalProps> = ({ onClo
 
   // Navigation Handlers
   const handleNext = useCallback(() => {
-    if (currentScreen < 2) {
+    if (currentScreen < 4) { // Updated to 4
       setCurrentScreen((prev) => prev + 1);
     }
   }, [currentScreen]);
@@ -173,17 +182,21 @@ const HowToPlayAnimationModal: React.FC<HowToPlayAnimationModalProps> = ({ onClo
   // Update Grid and Frozen Rows based on current screen
   useEffect(() => {
     switch (currentScreen) {
-      case 0:
+      case 1:
         setGrid(initialGrid1);
         setFrozenRows([]);
         break;
-      case 1:
+      case 2:
         setGrid(initialGrid2);
         setFrozenRows([]);
         break;
-      case 2:
+      case 3:
         setGrid(initialGrid3);
-        setFrozenRows([]); // Example: Freeze row index 2 at start of Screen3
+        setFrozenRows([1]); // Example: Freeze row index 1 at start of Screen3
+        break;
+      case 4:
+        setGrid(initialGrid4);
+        setFrozenRows([]);
         break;
       default:
         setGrid(initialGrid1);
@@ -193,18 +206,28 @@ const HowToPlayAnimationModal: React.FC<HowToPlayAnimationModalProps> = ({ onClo
 
   // Update Hand Position and Highlight based on current screen
   useEffect(() => {
-    if (currentScreen === 0) {
+    if (currentScreen === 1) {
       setHandPosition(getRowCenterPosition(0));
-      setHandColor('#6b7280');
-      setHighlight(null);
-    } else if (currentScreen === 1) {
-      const buttonPos = getFlipButtonPosition('row', 2);
-      setHandPosition(buttonPos);
       setHandColor('#6b7280');
       setHighlight(null);
     } else if (currentScreen === 2) {
       const buttonPos = getFlipButtonPosition('row', 2);
       setHandPosition(buttonPos);
+      setHandColor('#6b7280');
+      setHighlight(null);
+    } else if (currentScreen === 3) {
+      const buttonPos = getFlipButtonPosition('row', 1);
+      setHandPosition(buttonPos);
+      setHandColor('#6b7280');
+      setHighlight(null);
+    } else if (currentScreen === 4) {
+      // For Screen4, reset hand position and highlight
+      setHandPosition({ top: 0, left: 0 });
+      setHandColor('#6b7280');
+      setHighlight(null);
+    } else {
+      // For Screen0, reset hand position and highlight
+      setHandPosition({ top: 0, left: 0 });
       setHandColor('#6b7280');
       setHighlight(null);
     }
@@ -218,7 +241,8 @@ const HowToPlayAnimationModal: React.FC<HowToPlayAnimationModalProps> = ({ onClo
         </button>
         <h2 className={styles.modalTitle}>How to Play</h2>
         <div className={styles.modalBody}>
-          {currentScreen === 0 && (
+          {currentScreen === 0 && <Screen0 />}
+          {currentScreen === 1 && (
             <Screen1
               grid={grid}
               highlight={highlight}
@@ -231,11 +255,11 @@ const HowToPlayAnimationModal: React.FC<HowToPlayAnimationModalProps> = ({ onClo
               setHandColor={setHandColor}
               setHandPosition={setHandPosition}
               setHighlight={setHighlight}
-              setGrid={setGrid} // Pass setGrid directly
-              setFrozenRows={setFrozenRows} // Pass setFrozenRows directly
+              setGrid={setGrid}
+              setFrozenRows={setFrozenRows}
             />
           )}
-          {currentScreen === 1 && (
+          {currentScreen === 2 && (
             <Screen2
               grid={grid}
               highlight={highlight}
@@ -246,11 +270,11 @@ const HowToPlayAnimationModal: React.FC<HowToPlayAnimationModalProps> = ({ onClo
               setHandColor={setHandColor}
               setHandPosition={setHandPosition}
               setHighlight={setHighlight}
-              setGrid={setGrid} // Pass setGrid directly
-              setFrozenRows={setFrozenRows} // Pass setFrozenRows directly
+              setGrid={setGrid}
+              setFrozenRows={setFrozenRows}
             />
           )}
-          {currentScreen === 2 && (
+          {currentScreen === 3 && (
             <Screen3
               grid={grid}
               highlight={highlight}
@@ -263,41 +287,64 @@ const HowToPlayAnimationModal: React.FC<HowToPlayAnimationModalProps> = ({ onClo
               setHighlight={setHighlight}
               frozenRows={frozenRows}
               setFrozenRows={setFrozenRows}
-              setGrid={setGrid} // Pass setGrid directly
+              setGrid={setGrid}
+            />
+          )}
+          {currentScreen === 4 && (
+            <Screen4
+              grid={grid}
+              highlight={highlight}
+              handPosition={handPosition}
+              handColor={handColor}
+              onFlipRow={flipRow}
+              onFlipCol={flipCol}
+              onSwapRows={swapRows}
+              onSwapColumns={swapColumns}
+              setHandColor={setHandColor}
+              setHandPosition={setHandPosition}
+              setHighlight={setHighlight}
+              frozenRows={frozenRows}
+              setFrozenRows={setFrozenRows}
+              setGrid={setGrid}
             />
           )}
         </div>
-        <div className={styles.animationContainer}>
-          <div className={styles.gridWrapper}>
-            {/* Flip Buttons for Rows */}
-            {Array.from({ length: 4 }).map((_, rowIndex) => (
-              <FlipButton
-                key={`flip-row-${rowIndex}`}
-                direction="row"
-                index={rowIndex}
-                onClick={() => flipRow(rowIndex)}
-                disabled={frozenRows.includes(rowIndex)} // Disable button if row is frozen
-              />
-            ))}
 
-            {/* Flip Buttons for Columns */}
-            {Array.from({ length: 4 }).map((_, colIndex) => (
-              <FlipButton
-                key={`flip-col-${colIndex}`}
-                direction="col"
-                index={colIndex}
-                onClick={() => flipCol(colIndex)}
-                disabled={false}
-              />
-            ))}
+        {/* Conditionally render the animation grid and related components only for screens 1, 2, 3, 4 */}
+        {currentScreen > 0 && (
+          <div className={styles.animationContainer}>
+            <div className={styles.gridWrapper}>
+              {/* Flip Buttons for Rows */}
+              {Array.from({ length: 4 }).map((_, rowIndex) => (
+                <FlipButton
+                  key={`flip-row-${rowIndex}`}
+                  direction="row"
+                  index={rowIndex}
+                  onClick={() => flipRow(rowIndex)}
+                  disabled={frozenRows.includes(rowIndex)} // Disable button if row is frozen
+                />
+              ))}
 
-            {/* Animation Grid */}
-            <AnimationGrid grid={grid} highlight={highlight} frozenRows={frozenRows} />
+              {/* Flip Buttons for Columns */}
+              {Array.from({ length: 4 }).map((_, colIndex) => (
+                <FlipButton
+                  key={`flip-col-${colIndex}`}
+                  direction="col"
+                  index={colIndex}
+                  onClick={() => flipCol(colIndex)}
+                  disabled={false}
+                />
+              ))}
 
-            {/* Animated Hand */}
-            <HandIcon position={handPosition} color={handColor} />
+              {/* Animation Grid */}
+              <AnimationGrid grid={grid} highlight={highlight} frozenRows={frozenRows} />
+
+              {/* Animated Hand */}
+              <HandIcon position={handPosition} color={handColor} />
+            </div>
           </div>
-        </div>
+        )}
+
         <div className={styles.navigation}>
           <button
             onClick={handlePrev}
@@ -307,11 +354,11 @@ const HowToPlayAnimationModal: React.FC<HowToPlayAnimationModalProps> = ({ onClo
           >
             <FaArrowLeft size={16} />
           </button>
-          <NavigationDots total={3} current={currentScreen} />
+          <NavigationDots total={5} current={currentScreen} /> {/* Updated total to 5 */}
           <button
             onClick={handleNext}
             className={styles.navButton}
-            disabled={currentScreen === 2}
+            disabled={currentScreen === 4}
             aria-label="Next Screen"
           >
             <FaArrowRight size={16} />

@@ -39,7 +39,7 @@ const Screen1: React.FC<Screen1Props> = ({
       // Swap Rows 0 and 2
       // Step 1: Move hand to Row 0 center and highlight
       async () => {
-        await sleep(1000);
+        await sleep(50);
         if (isCancelled) return;
         
         console.log('Highlight set to row 0');
@@ -110,7 +110,7 @@ const Screen1: React.FC<Screen1Props> = ({
         if (isCancelled) return;
         console.log('Animation steps completed. Resetting grid and frozen rows.');
         setGrid(initialGrid1);
-        await sleep(1000);
+        await sleep(2000);
       },
     ];
 

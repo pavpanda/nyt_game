@@ -1,3 +1,5 @@
+// src/components/HowToPlayAnimationModal/screens/Screen3.tsx
+
 import React, { useEffect, useRef } from 'react';
 import styles from './Screens.module.css';
 import { getFlipButtonPosition, initialGrid3 } from '../HowToPlayAnimationModal';
@@ -28,60 +30,78 @@ const Screen3: React.FC<Screen3Props> = ({
 }) => {
   const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+  // Refs to hold stable references to onFlipRow and onFlipCol
+  const onFlipRowRef = useRef(onFlipRow);
+  const onFlipColRef = useRef(onFlipCol);
+
+  // Update refs whenever onFlipRow or onFlipCol changes
+  useEffect(() => {
+    onFlipRowRef.current = onFlipRow;
+    onFlipColRef.current = onFlipCol;
+  }, [onFlipRow, onFlipCol]);
+
   useEffect(() => {
     let isCancelled = false;
 
     const animationSteps = async () => {
       // Step 1: Move hand to Row 3 flip button
-      await sleep(1000);
+      await sleep(50);
       if (isCancelled) return;
-      setHandColor('#6b7280');
-      const buttonPos = getFlipButtonPosition('row', 2);
+      setHandColor('#6b7280'); // Normal color
+      const buttonPos = getFlipButtonPosition('row', 1);
       setHandPosition(buttonPos);
+      console.log('Hand moved to Row 2 flip button');
       
       // Step 2: Turn hand blue and highlight
-      await sleep(500);
-      if (isCancelled) return;
-      setHighlight({ type: 'row', index: 2 });
-      setHandColor('#3b82f6');
-      
-      // Step 3: Flip row and return hand to normal
-      await sleep(500);
-      if (isCancelled) return;
-      onFlipRow(2);
-      setHandColor('#6b7280');
-      
-      // Step 4: Mark row as frozen
       await sleep(1000);
       if (isCancelled) return;
+      setHighlight({ type: 'row', index: 1 });
+      setHandColor('#3b82f6'); // Blue color
+      onFlipRowRef.current(1); // Use ref to call the latest onFlipRow
+      console.log('Hand color changed to blue and Row 2 highlighted');
+      // Step 4: Mark row as frozen
+      await sleep(100);
+      setHandColor('#6b7280'); // Normal color
+
+      if (isCancelled) return;
       setHighlight(null);
-      setFrozenRows([2]);
-      
-      // Step 5: Reset everything for next iteration
+      setFrozenRows((prev) => {
+        if (!prev.includes(1)) {
+          return [...prev, 1];
+        }
+        return prev;
+      });
+      console.log('Row 2 marked as frozen');
+
+      // Step 5: Reset grid for next iteration (if needed)
       await sleep(1000);
       if (isCancelled) return;
       setGrid(initialGrid3);
-      setFrozenRows([]);
+      // Removed: setFrozenRows([]); // Keep the row frozen
       setHandPosition(getFlipButtonPosition('row', 2));
-      setHandColor('#6b7280');
+      setHandColor('#6b7280'); // Ensure hand is normal
       setHighlight(null);
-      
-      await sleep(1000);
+      setFrozenRows([]);
+      console.log('Grid reset for next iteration without unfreezing rows');
+
+      await sleep(2000);
     };
 
     const runAnimations = async () => {
       while (!isCancelled) {
         await animationSteps();
       }
+      setHighlight(null);
+      setFrozenRows([]);
     };
 
     runAnimations();
 
     return () => {
-      console.log("UH OH")
+      console.log("Animation cancelled");
       isCancelled = true;
     };
-  }, [onFlipRow, onFlipCol, setHandColor, setHandPosition, setHighlight, setGrid, setFrozenRows]);
+  }, [setHandColor, setHandPosition, setHighlight, setGrid, setFrozenRows]); // Removed onFlipRow and onFlipCol
 
   return (
     <div className={styles.screenContainer}>

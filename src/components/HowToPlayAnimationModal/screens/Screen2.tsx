@@ -36,7 +36,7 @@ const Screen2: React.FC<Screen2Props> = ({
     const animationSteps = [
       // Step 1: Move hand to Row 3 flip button
       async () => {
-        await sleep(1000);
+        await sleep(50);
         if (isCancelled) return;
         setHandColor('#6b7280'); // Normal color
         const buttonPos = getFlipButtonPosition('row', 2);
@@ -92,7 +92,7 @@ const Screen2: React.FC<Screen2Props> = ({
         if (isCancelled) return;
         console.log('Animation steps completed. Resetting grid and frozen rows.');
         setGrid(initialGrid2);
-        await sleep(1000);
+        await sleep(2000);
       },
     ];
 
