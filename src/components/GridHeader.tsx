@@ -5,7 +5,7 @@ interface GameHeaderProps {
 
 export const GameHeader: React.FC<GameHeaderProps> = ({ theme, onShowInstructions }) => (
   <div className="text-center space-y-1">
-    <h1 className="text-7xl md:text-8xl font-bold text-gray-800 transition-all">Flip</h1>
+    <h1 className="text-7xl md:text-8xl font-bold text-gray-800 transition-all mb-2">Flip</h1>
     <h2 className="text-lg font-bold md:text-lg text-blue-600 transition-all">Today's Theme: {theme}</h2>
     
     <div className="m-4">
