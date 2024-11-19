@@ -75,10 +75,10 @@ export const initialGrid2: Grid = [
 ];
 
 export const initialGrid3: Grid = [
-  [6, 2, 9, 12],
-  [16, 1, 7, 8],
-  [3, 10, 11, 4],
-  [13, 14, 15, 5],
+  [4, 3, 2, 1],
+  [8, 7, 6, 5],
+  [12, 11, 10, 9],
+  [16, 15, 14, 13],
 ];
 
 export const initialGrid4: Grid = [
