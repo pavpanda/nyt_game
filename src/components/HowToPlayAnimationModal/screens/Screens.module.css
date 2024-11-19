@@ -1,0 +1,99 @@
+/* src/components/HowToPlayAnimationModal/screens/Screen1.module.css */
+.screenContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.screenText {
+  font-size: 16px;
+  text-align: center;
+  
+}
+
+
+/* Narration Container */
+.narrationContainer {
+  width: 100%;
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #f9fafb; /* Light background for readability */
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Narration Text */
+.narrationText {
+  font-size: 16px;
+  color: #333;
+  text-align: center;
+  line-height: 1.5;
+  
+  /* Line clamping for desktop (1 line) */
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  
+  /* Smooth transition when text changes */
+  transition: all 0.3s ease-in-out;
+}
+
+/* Responsive Styles for Mobile Devices */
+@media (max-width: 768px) {
+  .narrationContainer {
+    width: 100%;
+    padding: 15px 25px;
+  }
+
+  .narrationText {
+    font-size: 14px;
+    
+    /* Line clamping for mobile (2 lines) */
+    -webkit-line-clamp: 2;
+  }
+}
+
+/* Screen Title */
+.screenTitle {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #2c3e50; /* Darker shade for prominence */
+}
+
+/* Bullet Points */
+.bulletPoints {
+  list-style-type: disc;
+  padding-left: 20px;
+  font-size: 16px;
+  color: #34495e; /* Slightly lighter than the title for hierarchy */
+  line-height: 1.6; /* Improves readability */
+}
+
+.bulletPoints li {
+  margin-bottom: 10px; /* Adds space between list items */
+}
+
+/* Optional: Hover Effects for List Items */
+.bulletPoints li:hover {
+  color: #1abc9c; /* Changes color on hover */
+  transition: color 0.3s ease;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .screenTitle {
+    font-size: 20px;
+    margin-bottom: 16px;
+  }
+
+  .bulletPoints {
+    font-size: 14px;
+    padding-left: 16px;
+  }
+
+  .bulletPoints li {
+    margin-bottom: 8px;
+  }
+}

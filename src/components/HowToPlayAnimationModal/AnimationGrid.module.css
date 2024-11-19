@@ -1,4 +1,6 @@
-/* src/components/HowToPlayAnimationModal/AnimationGrid.module.css */
+/* src/components/AnimationGrid/animationgrid.module.css */
+
+/* Grid Container */
 .grid {
   display: grid;
   grid-template-columns: repeat(4, 40px);
@@ -9,11 +11,12 @@
   position: relative;
 }
 
+/* Individual Grid Cell */
 .gridCell {
   width: 40px;
   height: 40px;
-  background-color: #ebf8ff;
-  border: 1px solid #d1d5db;
+  background-color: #ebf8ff; /* Tailwind bg-blue-100 */
+  border: 1px solid #d1d5db; /* Tailwind border-gray-300 */
   border-radius: 4px;
   display: flex;
   align-items: center;
@@ -22,13 +25,36 @@
   transition: transform 0.3s, background-color 0.3s;
 }
 
+/* Highlighted Cell */
 .highlight {
   transform: scale(1.1);
-  background-color: #bfdbfe;
+  background-color: #bfdbfe; /* Tailwind bg-blue-200 */
 }
 
-.frozen {
-  background-color: #10b981; /* Tailwind green-500 */
-  color: white;
-  cursor: not-allowed;
+/* Frozen Rows with Tailwind Colors and 90% Opacity */
+
+/* Frozen Row 0: Tailwind bg-yellow-200 with opacity 0.9 */
+.frozen-row-0 {
+  background-color: rgba(254, 240, 138, 0.9); /* #fef08a with 90% opacity */
 }
+
+/* Frozen Row 1: Tailwind bg-orange-200 with opacity 0.9 */
+.frozen-row-1 {
+  background-color: rgba(254, 215, 170, 0.9); /* #fed7aa with 90% opacity */
+}
+
+/* Frozen Row 2: Tailwind bg-green-200 with opacity 0.9 */
+.frozen-row-2 {
+  background-color: rgba(187, 247, 208, 0.9); /* #bbf7d0 with 90% opacity */
+}
+
+/* Frozen Row 3: Tailwind bg-purple-200 with opacity 0.9 */
+.frozen-row-3 {
+  background-color: rgba(233, 213, 255, 0.9); /* #e9d5ff with 90% opacity */
+}
+
+/* Optional: General Frozen Class for Additional Styles */
+/* .frozen {
+  /* Add any additional styles for all frozen rows here */
+  /* transition: background-color 0.3s ease; */
+/* } */

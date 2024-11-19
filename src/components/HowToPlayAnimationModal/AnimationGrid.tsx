@@ -1,5 +1,3 @@
-// src/components/HowToPlayAnimationModal/AnimationGrid.tsx
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import styles from './AnimationGrid.module.css';
@@ -7,29 +5,31 @@ import styles from './AnimationGrid.module.css';
 interface AnimationGridProps {
   grid: number[][];
   highlight: { type: 'row' | 'col'; index: number } | null;
-  frozenRows: Set<number>;
+  frozenRows: number[];
 }
 
 const NUMBER_TO_LETTER: { [key: number]: string } = {
-  1: 'A',
-  2: 'B',
-  3: 'C',
-  4: 'D',
-  5: 'E',
-  6: 'F',
-  7: 'G',
+  1: 'B',
+  2: 'E',
+  3: 'A',
+  4: 'R',
+  5: 'F',
+  6: 'I',
+  7: 'S',
   8: 'H',
-  9: 'I',
-  10: 'J',
-  11: 'K',
-  12: 'L',
-  13: 'M',
-  14: 'N',
-  15: 'O',
-  16: 'P',
+  9: 'N',
+  10: 'E',
+  11: 'W',
+  12: 'T',
+  13: 'W',
+  14: 'O',
+  15: 'L',
+  16: 'F',
 };
 
 const AnimationGrid: React.FC<AnimationGridProps> = ({ grid, highlight, frozenRows }) => {
+  const isRowFrozen = (rowIndex: number): boolean => frozenRows.includes(rowIndex);
+
   return (
     <motion.div className={styles.grid} layout>
       {grid.map((row, rowIndex) =>
@@ -39,14 +39,15 @@ const AnimationGrid: React.FC<AnimationGridProps> = ({ grid, highlight, frozenRo
             ((highlight.type === 'row' && highlight.index === rowIndex) ||
               (highlight.type === 'col' && highlight.index === colIndex));
 
+          const frozenClass = isRowFrozen(rowIndex) ? styles[`frozen-row-${rowIndex}`] : '';
+
           return (
             <motion.div
               key={`anim-cell-${rowIndex}-${colIndex}`}
-              className={`${styles.gridCell} ${isHighlighted ? styles.highlight : ''} ${
-                frozenRows.has(rowIndex) ? styles.frozen : ''
-              }`}
+              className={`${styles.gridCell} ${isHighlighted ? styles.highlight : ''} ${frozenClass}`}
               layout
-              transition={{ duration: 0.5 }}
+              // Removed the backgroundColor animation to rely on CSS classes
+              transition={{ duration: 0.3 }}
             >
               {NUMBER_TO_LETTER[cell]}
             </motion.div>
