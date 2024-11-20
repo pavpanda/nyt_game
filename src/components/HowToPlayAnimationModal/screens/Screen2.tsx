@@ -115,8 +115,8 @@ const Screen2: React.FC<Screen2Props> = ({
   return (
     <div className={styles.screenContainer}>
       <p className={styles.screenText}>
-        Click on the outer buttons to flip a row or column.
-        This is useful for inserting letters in desired positions.
+        <strong>Flipping:</strong> Click on the outer buttons to flip a row or column.
+        This is useful for positioning letters.
       </p>
     </div>
   );

@@ -133,8 +133,8 @@ const Screen1: React.FC<Screen1Props> = ({
   return (
     <div className={styles.screenContainer}>
       <p className={styles.screenText}>
-        Drag rows or columns to swap them.
-        This is useful for moving groups of letters around the grid.
+        <strong>Swapping:</strong> Drag rows or columns to swap them.
+        This is useful for moving groups of letters around.
       </p>
     </div>
   );

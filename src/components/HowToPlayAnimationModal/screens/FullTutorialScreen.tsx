@@ -6,7 +6,7 @@ import {
   getFlipButtonPosition,
   getRowCenterPosition,
   getColumnCenterPosition,
-  initialGrid4,
+  fullGrid,
 } from '../HowToPlayAnimationModal';
 
 interface Screen4Props {
@@ -26,7 +26,7 @@ interface Screen4Props {
   setGrid: React.Dispatch<React.SetStateAction<number[][]>>;
 }
 
-const Screen4: React.FC<Screen4Props> = ({
+const FullTutorialScreen: React.FC<Screen4Props> = ({
   grid,
   highlight,
   handPosition,
@@ -296,7 +296,7 @@ const Screen4: React.FC<Screen4Props> = ({
       async () => {
         await sleep(1000);
         if (isCancelled) return;
-        setGrid(initialGrid4);
+        setGrid(fullGrid);
         // Removed: setFrozenRows([]); // Keep the row frozen
         setHandPosition(getFlipButtonPosition('row', 2));
         setHandColor('#6b7280'); // Ensure hand is normal
@@ -332,7 +332,7 @@ const Screen4: React.FC<Screen4Props> = ({
   return (
     <div className={styles.screenContainer}>
       <p className={styles.screenText}>
-        <strong>Let's put it all together. This is a board with the theme "Animals."</strong>
+        <strong>Here's a full example. This is a board with the theme "Animals."</strong>
       </p>
       <div className={styles.narrationContainer}>
         <p className={styles.narrationText}>{narration}</p>
@@ -341,4 +341,4 @@ const Screen4: React.FC<Screen4Props> = ({
   );
 };
 
-export default Screen4;
+export default FullTutorialScreen;

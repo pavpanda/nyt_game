@@ -6,7 +6,7 @@ import Screen0 from './screens/Screen0'; // Import Screen0
 import Screen1 from './screens/Screen1';
 import Screen2 from './screens/Screen2';
 import Screen3 from './screens/Screen3';
-import Screen4 from './screens/Screen4'; // Import Screen4
+import FullTutorialScreen from './screens/FullTutorialScreen'; // Import Screen4
 import NavigationDots from './NavigationDots';
 import AnimationGrid from './AnimationGrid';
 import FlipButton from './HowToPlayFlipButton';
@@ -81,7 +81,7 @@ export const initialGrid3: Grid = [
   [16, 15, 14, 13],
 ];
 
-export const initialGrid4: Grid = [
+export const fullGrid: Grid = [
   [15, 10, 11, 8],
   [3, 2, 1, 4],
   [7, 14, 5, 16],
@@ -183,19 +183,19 @@ const HowToPlayAnimationModal: React.FC<HowToPlayAnimationModalProps> = ({ onClo
   useEffect(() => {
     switch (currentScreen) {
       case 1:
-        setGrid(initialGrid1);
+        setGrid(fullGrid);
         setFrozenRows([]);
         break;
       case 2:
-        setGrid(initialGrid2);
+        setGrid(initialGrid1);
         setFrozenRows([]);
         break;
       case 3:
-        setGrid(initialGrid3);
+        setGrid(initialGrid2);
         setFrozenRows([]); // **Changed from [1] to []**
         break;
       case 4:
-        setGrid(initialGrid4);
+        setGrid(initialGrid3);
         setFrozenRows([]);
         break;
       default:
@@ -243,6 +243,24 @@ const HowToPlayAnimationModal: React.FC<HowToPlayAnimationModalProps> = ({ onClo
         <div className={styles.modalBody}>
           {currentScreen === 0 && <Screen0 />}
           {currentScreen === 1 && (
+            <FullTutorialScreen
+              grid={grid}
+              highlight={highlight}
+              handPosition={handPosition}
+              handColor={handColor}
+              onFlipRow={flipRow}
+              onFlipCol={flipCol}
+              onSwapRows={swapRows}
+              onSwapColumns={swapColumns}
+              setHandColor={setHandColor}
+              setHandPosition={setHandPosition}
+              setHighlight={setHighlight}
+              frozenRows={frozenRows}
+              setFrozenRows={setFrozenRows}
+              setGrid={setGrid}
+            />
+          )}
+          {currentScreen === 2 && (
             <Screen1
               grid={grid}
               highlight={highlight}
@@ -259,7 +277,7 @@ const HowToPlayAnimationModal: React.FC<HowToPlayAnimationModalProps> = ({ onClo
               setFrozenRows={setFrozenRows}
             />
           )}
-          {currentScreen === 2 && (
+          {currentScreen === 3 && (
             <Screen2
               grid={grid}
               highlight={highlight}
@@ -274,7 +292,7 @@ const HowToPlayAnimationModal: React.FC<HowToPlayAnimationModalProps> = ({ onClo
               setFrozenRows={setFrozenRows}
             />
           )}
-          {currentScreen === 3 && (
+          {currentScreen === 4 && (
             <Screen3
               grid={grid}
               highlight={highlight}
@@ -282,24 +300,6 @@ const HowToPlayAnimationModal: React.FC<HowToPlayAnimationModalProps> = ({ onClo
               handColor={handColor}
               onFlipRow={flipRow}
               onFlipCol={flipCol}
-              setHandColor={setHandColor}
-              setHandPosition={setHandPosition}
-              setHighlight={setHighlight}
-              frozenRows={frozenRows}
-              setFrozenRows={setFrozenRows}
-              setGrid={setGrid}
-            />
-          )}
-          {currentScreen === 4 && (
-            <Screen4
-              grid={grid}
-              highlight={highlight}
-              handPosition={handPosition}
-              handColor={handColor}
-              onFlipRow={flipRow}
-              onFlipCol={flipCol}
-              onSwapRows={swapRows}
-              onSwapColumns={swapColumns}
               setHandColor={setHandColor}
               setHandPosition={setHandPosition}
               setHighlight={setHighlight}

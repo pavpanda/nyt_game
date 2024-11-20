@@ -106,7 +106,7 @@ const Screen3: React.FC<Screen3Props> = ({
   return (
     <div className={styles.screenContainer}>
       <p className={styles.screenText}>
-        Once you solve a row, it freezes and won't change during further swaps or flips.
+        <strong>Solved rows:</strong> Once you solve a row, it freezes and won't change during further swaps or flips.
       </p>
     </div>
   );
