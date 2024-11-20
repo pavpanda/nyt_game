@@ -50,7 +50,7 @@ const Screen3: React.FC<Screen3Props> = ({
       setHandColor('#6b7280'); // Normal color
       const buttonPos = getFlipButtonPosition('row', 1);
       setHandPosition(buttonPos);
-      console.log('Hand moved to Row 2 flip button');
+      // console.log('Hand moved to Row 2 flip button');
       
       // Step 2: Turn hand blue and highlight
       await sleep(1000);
@@ -58,7 +58,7 @@ const Screen3: React.FC<Screen3Props> = ({
       setHighlight({ type: 'row', index: 1 });
       setHandColor('#3b82f6'); // Blue color
       onFlipRowRef.current(1); // Use ref to call the latest onFlipRow
-      console.log('Hand color changed to blue and Row 2 highlighted');
+      // console.log('Hand color changed to blue and Row 2 highlighted');
       // Step 4: Mark row as frozen
       await sleep(100);
       setHandColor('#6b7280'); // Normal color
@@ -71,7 +71,7 @@ const Screen3: React.FC<Screen3Props> = ({
         }
         return prev;
       });
-      console.log('Row 2 marked as frozen');
+      // console.log('Row 2 marked as frozen');
 
       // Step 5: Reset grid for next iteration (if needed)
       await sleep(1000);
@@ -82,7 +82,7 @@ const Screen3: React.FC<Screen3Props> = ({
       setHandColor('#6b7280'); // Ensure hand is normal
       setHighlight(null);
       setFrozenRows([]);
-      console.log('Grid reset for next iteration without unfreezing rows');
+      // console.log('Grid reset for next iteration without unfreezing rows');
 
       await sleep(2000);
     };
@@ -98,7 +98,7 @@ const Screen3: React.FC<Screen3Props> = ({
     runAnimations();
 
     return () => {
-      console.log("Animation cancelled");
+      // console.log("Animation cancelled");
       isCancelled = true;
     };
   }, [setHandColor, setHandPosition, setHighlight, setGrid, setFrozenRows]); // Removed onFlipRow and onFlipCol

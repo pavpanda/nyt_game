@@ -1,7 +1,7 @@
 // GameBoard.tsx
 import React, { useState, useEffect } from 'react';
 import { Grid } from '../types/types';
-import { SOLUTION, NUMBER_TO_LETTER, SCRAMBLE } from '../constants/gameConstants';
+import { SOLUTION, NUMBER_TO_LETTER, SCRAMBLE, GAME_NUMBER } from '../constants/gameConstants';
 import { useGridOperations } from '../hooks/useGridOperations';
 import ResponsiveGameLayout from './ResponsiveGameLayout';
 import WinModal from './WinModal';
@@ -9,7 +9,7 @@ import HowToPlayAnimationModal from './HowToPlayAnimationModal/HowToPlayAnimatio
 
 const LOCAL_STORAGE_KEY = 'gameState';
 const HOW_TO_PLAY_SEEN_KEY = 'howToPlaySeen';
-const LAST_LOGIN_KEY = 'lastLoginDate';
+const GAME_NUMBER_KEY = 'gameNumber';
 
 interface SavedGameState {
   grid: Grid;
@@ -19,52 +19,45 @@ interface SavedGameState {
   solvedRowsHistory: Record<number, number>;
 }
 
-const isNewDay = (): boolean => {
-  const lastLogin = localStorage.getItem(LAST_LOGIN_KEY);
-  if (!lastLogin) return true;
-
-  const lastLoginDate = new Date(lastLogin);
-  const now = new Date();
-  
-  // Convert both dates to ET
-  const etOffset = -4; // EDT offset from UTC in hours
-  const lastLoginET = new Date(lastLoginDate.getTime() + etOffset * 60 * 60 * 1000);
-  const nowET = new Date(now.getTime() + etOffset * 60 * 60 * 1000);
-  
-  // Set time to 9 AM ET for comparison
-  const lastLoginDay = new Date(lastLoginET);
-  lastLoginDay.setHours(9, 0, 0, 0);
-  
-  const nowDay = new Date(nowET);
-  nowDay.setHours(9, 0, 0, 0);
-  
-  return nowDay > lastLoginDay;
-};
-
 export const GameBoard: React.FC = () => {
+  // Function to load the initial game state
   const loadInitialState = (): SavedGameState | null => {
-    // Check if it's a new day after 9 AM ET
-    if (isNewDay()) {
-      localStorage.clear();
-      localStorage.setItem(LAST_LOGIN_KEY, new Date().toISOString());
-      return null;
+    const storedGameNumber = localStorage.getItem(GAME_NUMBER_KEY);
+    // console.log(`Stored Game Number: ${storedGameNumber}`);
+    // console.log(`Current GAME_NUMBER: ${GAME_NUMBER}`);
+
+    // Check if the stored game number matches the current GAME_NUMBER
+    if (storedGameNumber !== GAME_NUMBER.toString()) {
+      // console.log('Game number mismatch. Resetting game state.');
+
+      // Remove specific keys instead of clearing entire localStorage
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+      localStorage.removeItem(HOW_TO_PLAY_SEEN_KEY);
+      
+      // Update the GAME_NUMBER in localStorage
+      localStorage.setItem(GAME_NUMBER_KEY, GAME_NUMBER.toString());
+
+      return null; // Return null to initialize with default values
     }
-    
-    // Update last login time
-    localStorage.setItem(LAST_LOGIN_KEY, new Date().toISOString());
-    
+
+    // Retrieve the saved game state
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (saved) {
       try {
         const parsed: SavedGameState = JSON.parse(saved);
+        // console.log('Loaded saved game state:', parsed);
         return parsed;
-      } catch {
+      } catch (error) {
+        console.error('Error parsing saved game state:', error);
         return null;
       }
     }
+
+    // If no saved state exists
     return null;
   };
 
+  // Initialize state variables
   const initialState = loadInitialState();
 
   const [grid, setGrid] = useState<Grid>(() => initialState?.grid || SCRAMBLE);
@@ -89,6 +82,7 @@ export const GameBoard: React.FC = () => {
     setMoveCount
   );
 
+  // Effect to save game state to localStorage whenever relevant state changes
   useEffect(() => {
     const savedState: SavedGameState = {
       grid,
@@ -98,8 +92,10 @@ export const GameBoard: React.FC = () => {
       solvedRowsHistory,
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(savedState));
+    // console.log('Game state saved:', savedState);
   }, [grid, moveCount, frozenRows, solvedRowsOrder, solvedRowsHistory]);
 
+  // Effect to update frozen rows based on correctness
   useEffect(() => {
     setFrozenRows((prev) => {
       const newFrozen = new Set<number>();
@@ -116,6 +112,7 @@ export const GameBoard: React.FC = () => {
               [index]: moveCount,
             }));
             setSolvedRowsOrder((current) => new Map(current).set(index, moveCount));
+            // console.log(`Row ${index} solved in ${moveCount} moves.`);
           }
         }
       });
@@ -123,17 +120,19 @@ export const GameBoard: React.FC = () => {
     });
   }, [grid, moveCount]);
 
+  // Effect to show win modal if all rows are frozen
   useEffect(() => {
-    if (Object.keys(solvedRowsHistory).length > 0) {
-      if (frozenRows.size === grid.length) {
-        setShowWinModal(true);
-      }
+    if (Object.keys(solvedRowsHistory).length > 0 && frozenRows.size === grid.length) {
+      // console.log('All rows solved. Showing win modal.');
+      setShowWinModal(true);
     }
   }, [frozenRows, solvedRowsHistory, grid.length]);
 
+  // Effect to show How To Play animation if not seen
   useEffect(() => {
     const hasSeen = localStorage.getItem(HOW_TO_PLAY_SEEN_KEY);
     if (!hasSeen) {
+      // console.log('Showing How To Play animation.');
       setShowHowToPlayAnimation(true);
       localStorage.setItem(HOW_TO_PLAY_SEEN_KEY, 'true');
     }

@@ -42,8 +42,8 @@ const WinModal: React.FC<WinModalProps> = ({ onClose, solvedRowsHistory }) => {
       await navigator.clipboard.writeText(clipboardText);
       
       // Add debug logs
-      console.log('GA Available:', typeof window.gtag !== 'undefined');
-      console.log('Tracking event: share_results');
+      // console.log('GA Available:', typeof window.gtag !== 'undefined');
+      // console.log('Tracking event: share_results');
       
       trackEvent('share_results', {
         method: 'clipboard',

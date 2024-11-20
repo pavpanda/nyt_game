@@ -38,7 +38,7 @@ export const scrambleGrid = (grid: Grid): Grid => {
       }
     }
   }
-  console.log(currentGrid);
+  // console.log(currentGrid);
   return currentGrid;
 };
 

@@ -18,7 +18,7 @@ export const useAnalytics = () => {
     eventParams?: { [key: string]: any }
   ) => {
     if (typeof window.gtag !== 'undefined') {
-      console.log('Tracking event:', eventName, eventParams); // Debug log
+      // console.log('Tracking event:', eventName, eventParams); // Debug log
       window.gtag('event', eventName, eventParams);
     } else {
       console.warn('Google Analytics not initialized'); // Debug warning

@@ -41,7 +41,7 @@ const Screen2: React.FC<Screen2Props> = ({
         setHandColor('#6b7280'); // Normal color
         const buttonPos = getFlipButtonPosition('row', 2);
         setHandPosition(buttonPos);
-        console.log('Highlight set to row 2');
+        // console.log('Highlight set to row 2');
         await sleep(1000);
       },
       // Step 2: Turn hand blue
@@ -50,7 +50,7 @@ const Screen2: React.FC<Screen2Props> = ({
         setHighlight({ type: 'row', index: 2 });
         setHandColor('#3b82f6'); // Blue color
         onFlipRow(2);
-        console.log('Hand color changed to blue');
+        // console.log('Hand color changed to blue');
         await sleep(500);
       },
       // Step 3: Turn hand back to normal
@@ -58,7 +58,7 @@ const Screen2: React.FC<Screen2Props> = ({
         if (isCancelled) return;
         setHandColor('#6b7280'); // Normal color
         setHighlight(null);
-        console.log('Hand color reverted to normal');
+        // console.log('Hand color reverted to normal');
         await sleep(500);
       },
       // Step 5: Move hand to Column 1 flip button
@@ -67,7 +67,7 @@ const Screen2: React.FC<Screen2Props> = ({
         setHandColor('#6b7280'); // Ensure hand is normal
         const buttonPos = getFlipButtonPosition('col', 0);
         setHandPosition(buttonPos);
-        console.log('Highlight set to column 0');
+        // console.log('Highlight set to column 0');
         await sleep(1000);
       },
       // Step 6: Turn hand blue
@@ -76,7 +76,7 @@ const Screen2: React.FC<Screen2Props> = ({
         setHandColor('#3b82f6'); // Blue color
         setHighlight({ type: 'col', index: 0 });
         onFlipCol(0);
-        console.log('Hand color changed to blue');
+        // console.log('Hand color changed to blue');
         await sleep(500);
       },
       // Step 7: Turn hand back to normal
@@ -84,13 +84,13 @@ const Screen2: React.FC<Screen2Props> = ({
         if (isCancelled) return;
         setHandColor('#6b7280'); // Normal color
         setHighlight(null);
-        console.log('Hand color reverted to normal');
+        // console.log('Hand color reverted to normal');
         await sleep(500);
       },
       // Final Step: Reset grid and frozenRows
       async () => {
         if (isCancelled) return;
-        console.log('Animation steps completed. Resetting grid and frozen rows.');
+        // console.log('Animation steps completed. Resetting grid and frozen rows.');
         setGrid(initialGrid2);
         await sleep(2000);
       },

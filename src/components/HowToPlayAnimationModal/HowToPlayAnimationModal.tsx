@@ -103,7 +103,7 @@ const HowToPlayAnimationModal: React.FC<HowToPlayAnimationModalProps> = ({ onClo
   const flipRow = useCallback(
     (rowIndex: number) => {
       if (frozenRows.includes(rowIndex)) {
-        console.log(`Row ${rowIndex} is frozen and cannot be flipped.`);
+        // console.log(`Row ${rowIndex} is frozen and cannot be flipped.`);
         return;
       }
       setGrid((prevGrid) => {
@@ -139,7 +139,7 @@ const HowToPlayAnimationModal: React.FC<HowToPlayAnimationModalProps> = ({ onClo
   const swapRows = useCallback(
     (row1: number, row2: number) => {
       if (frozenRows.includes(row1) || frozenRows.includes(row2)) {
-        console.log(`One or both rows are frozen and cannot be swapped.`);
+        // console.log(`One or both rows are frozen and cannot be swapped.`);
         return;
       }
       setGrid((prevGrid) => {

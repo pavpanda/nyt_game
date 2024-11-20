@@ -93,13 +93,13 @@ const Screen4: React.FC<Screen4Props> = ({
         if (isCancelled) return;
         setHandColor('#3b82f6'); // Blue color
         setHighlight({ type: 'col', index: 0 });
-        console.log('Hand color changed to blue');
+        // console.log('Hand color changed to blue');
         await sleep(500);
       },
       async () => {
         if (isCancelled) return;
         setHighlight({ type: 'col', index: 2 });
-        console.log('Highlight set to column 2');
+        // console.log('Highlight set to column 2');
         setHandPosition(getColumnCenterPosition(2));
         await sleep(1000);
       },
@@ -108,7 +108,7 @@ const Screen4: React.FC<Screen4Props> = ({
         setHandColor('#6b7280'); // Normal color
         onSwapColumnsRef.current(0, 2);
         setHighlight(null);
-        console.log('Hand color reverted to normal and swapped columns 0 and 2');
+        // console.log('Hand color reverted to normal and swapped columns 0 and 2');
         await sleep(1000);
       },
       async () => {
@@ -119,7 +119,7 @@ const Screen4: React.FC<Screen4Props> = ({
       async () => {
         await sleep(50);
         if (isCancelled) return;
-        console.log('Highlight set to row 0');
+        // console.log('Highlight set to row 0');
         setHandPosition(getRowCenterPosition(0));
         await sleep(1000);
       },
@@ -127,7 +127,7 @@ const Screen4: React.FC<Screen4Props> = ({
         if (isCancelled) return;
         setHandColor('#3b82f6'); // Blue color
         setHighlight({ type: 'row', index: 0 });
-        console.log('Hand color changed to blue');
+        // console.log('Hand color changed to blue');
         await sleep(500);
       },
       async () => {
@@ -165,7 +165,7 @@ const Screen4: React.FC<Screen4Props> = ({
         setHandColor('#6b7280'); // Normal color
         const buttonPos = getFlipButtonPosition('col', 1);
         setHandPosition(buttonPos);
-        console.log('Highlight set to column 1');
+        // console.log('Highlight set to column 1');
         await sleep(1000);
       },
       async () => {
@@ -173,14 +173,14 @@ const Screen4: React.FC<Screen4Props> = ({
         setHighlight({ type: 'col', index: 1 });
         setHandColor('#3b82f6'); // Blue color
         onFlipColRef.current(1);
-        console.log('Hand color changed to blue');
+        // console.log('Hand color changed to blue');
         await sleep(500);
       },
       async () => {
         if (isCancelled) return;
         setHandColor('#6b7280'); // Normal color
         setHighlight(null);
-        console.log('Hand color reverted to normal');
+        // console.log('Hand color reverted to normal');
         await sleep(500);
       },
       async () => {
@@ -191,7 +191,7 @@ const Screen4: React.FC<Screen4Props> = ({
       async () => {
         await sleep(50);
         if (isCancelled) return;
-        console.log('Highlight set to row 3');
+        // console.log('Highlight set to row 3');
         setHandPosition(getRowCenterPosition(3));
         await sleep(1000);
       },
@@ -199,7 +199,7 @@ const Screen4: React.FC<Screen4Props> = ({
         if (isCancelled) return;
         setHandColor('#3b82f6'); // Blue color
         setHighlight({ type: 'row', index: 3 });
-        console.log('Hand color changed to blue');
+        // console.log('Hand color changed to blue');
         await sleep(500);
       },
       async () => {
@@ -237,7 +237,7 @@ const Screen4: React.FC<Screen4Props> = ({
         setHandColor('#6b7280'); // Normal color
         const buttonPos = getFlipButtonPosition('col', 0);
         setHandPosition(buttonPos);
-        console.log('Highlight set to column 0');
+        // console.log('Highlight set to column 0');
         await sleep(1000);
       },
       async () => {
@@ -245,14 +245,14 @@ const Screen4: React.FC<Screen4Props> = ({
         setHighlight({ type: 'col', index: 0 });
         setHandColor('#3b82f6'); // Blue color
         onFlipColRef.current(0);
-        console.log('Hand color changed to blue');
+        // console.log('Hand color changed to blue');
         await sleep(500);
       },
       async () => {
         if (isCancelled) return;
         setHandColor('#6b7280'); // Normal color
         setHighlight(null);
-        console.log('Hand color reverted to normal');
+        // console.log('Hand color reverted to normal');
         await sleep(500);
       },
       // Flip column 3
@@ -262,7 +262,7 @@ const Screen4: React.FC<Screen4Props> = ({
         setHandColor('#6b7280'); // Normal color
         const buttonPos = getFlipButtonPosition('col', 2);
         setHandPosition(buttonPos);
-        console.log('Highlight set to column 2');
+        // console.log('Highlight set to column 2');
         await sleep(1000);
       },
       async () => {
@@ -270,14 +270,14 @@ const Screen4: React.FC<Screen4Props> = ({
         setHighlight({ type: 'col', index: 2 });
         setHandColor('#3b82f6'); // Blue color
         onFlipColRef.current(2);
-        console.log('Hand color changed to blue');
+        // console.log('Hand color changed to blue');
         await sleep(500);
       },
       async () => {
         if (isCancelled) return;
         setHandColor('#6b7280'); // Normal color
         setHighlight(null);
-        console.log('Hand color reverted to normal');
+        // console.log('Hand color reverted to normal');
         await sleep(500);
       },
       // Solve Row 4
@@ -319,7 +319,7 @@ const Screen4: React.FC<Screen4Props> = ({
 
     return () => {
       isCancelled = true;
-      console.log('Screen4 animation cancelled.');
+      // console.log('Screen4 animation cancelled.');
     };
   }, [
     setHandColor,
