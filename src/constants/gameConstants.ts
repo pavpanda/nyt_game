@@ -3,10 +3,10 @@ import { Grid, TouchDragState } from '../types/types';
 export const LINK = "www.flipisfun.com";
 export const NUM_ROWS = 4;
 
-export const GAME_NUMBER = 9;
+export const GAME_NUMBER = 8;
 
 export const NUMBER_TO_LETTER: { [key: number]: string } = {
-  1: 'O', 2: 'O', 3: 'O', 4: 'O',
+  1: 'E', 2: 'M', 3: 'I', 4: 'T',
   5: 'I', 6: 'T', 7: 'E', 8: 'M',
   9: 'M', 10: 'I', 11: 'T', 12: 'E',
   13: 'T', 14: 'I', 15: 'M', 16: 'E'
