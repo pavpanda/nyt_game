@@ -21,17 +21,17 @@ export const initialTouchState: TouchDragState = {
 
 
 
-export const GAME_NUMBER = 9;
+export const GAME_NUMBER = 10;
 export const NUMBER_TO_LETTER: { [key: number]: string } = {
-  1: 'K', 2: 'N', 3: 'E', 4: 'E',
-  5: 'L', 6: 'U', 7: 'N', 8: 'G',
-  9: 'N', 10: 'E', 11: 'C', 12: 'K',
-  13: 'N', 14: 'O', 15: 'S', 16: 'E'
+  1: 'D', 2: 'O', 3: 'H', 4: 'A',
+  5: 'K', 6: 'Y', 7: 'I', 8: 'V',
+  9: 'L', 10: 'I', 11: 'M', 12: 'A',
+  13: 'O', 14: 'S', 15: 'L', 16: 'O'
 };
 export const SCRAMBLE = [
-  [9, 15, 4, 10],
-  [2, 12, 5, 3],
-  [7, 8, 14, 6],
-  [11, 16, 1, 13],
+  [13, 2, 8, 11],
+  [4, 10, 16, 5],
+  [9, 7, 3, 14],
+  [6, 1, 12, 15],
 ];
-export const THEME = "Body Parts";
+export const THEME = "Capital Cities";
