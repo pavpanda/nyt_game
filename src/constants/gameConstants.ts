@@ -21,17 +21,18 @@ export const initialTouchState: TouchDragState = {
 
 
 
-export const GAME_NUMBER = 10;
+export const GAME_NUMBER = 12;
 export const NUMBER_TO_LETTER: { [key: number]: string } = {
-  1: 'I', 2: 'R', 3: 'I', 4: 'S',
-  5: 'J', 6: 'A', 7: 'D', 8: 'E',
-  9: 'R', 10: 'O', 11: 'S', 12: 'E',
-  13: 'S', 14: 'A', 15: 'G', 16: 'E'
+  1: 'B', 2: 'I', 3: 'L', 4: 'L',
+  5: 'E', 6: 'L', 7: 'O', 8: 'N',
+  9: 'J', 10: 'E', 11: 'F', 12: 'F',
+  13: 'M', 14: 'A', 15: 'R', 16: 'K'
 };
 export const SCRAMBLE = [
-  [11, 8, 12, 13],
-  [4, 10, 3, 5],
-  [9, 7, 16, 14],
-  [6, 1, 2, 15],
+  [5, 12, 9, 16],
+  [14, 7, 1, 10],
+  [6, 15, 3, 11],
+  [2, 13, 8, 4],
 ];
+
 export const THEME = "Floral Names";
