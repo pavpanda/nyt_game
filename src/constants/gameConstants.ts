@@ -34,5 +34,4 @@ export const SCRAMBLE = [
   [6, 15, 3, 11],
   [2, 13, 8, 4],
 ];
-
-export const THEME = "Floral Names";
+export const THEME = "Big Tech Founders";
