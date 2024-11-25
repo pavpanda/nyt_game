@@ -23,15 +23,15 @@ export const initialTouchState: TouchDragState = {
 
 export const GAME_NUMBER = 13;
 export const NUMBER_TO_LETTER: { [key: number]: string } = {
-  1: 'B', 2: 'L', 3: 'U', 4: 'E',
-  5: 'B', 6: 'R', 7: 'I', 8: 'E',
-  9: 'F', 10: 'E', 11: 'T', 12: 'A',
-  13: 'P', 14: 'A', 15: 'R', 16: 'M'
+  1: 'C', 2: 'R', 3: 'A', 4: 'B',
+  5: 'F', 6: 'I', 7: 'S', 8: 'H',
+  9: 'R', 10: 'E', 11: 'E', 12: 'F',
+  13: 'S', 14: 'E', 15: 'A', 16: 'L'
 };
 export const SCRAMBLE = [
-  [13, 2, 15, 6],
-  [9, 12, 4, 11],
-  [1, 14, 7, 10],
-  [8, 16, 5, 3],
+  [7, 11, 2, 16],
+  [5, 13, 10, 1],
+  [14, 4, 9, 6],
+  [12, 8, 3, 15],
 ];
-export const THEME = "Cheese!";
+export const THEME = "In the ocean!";
