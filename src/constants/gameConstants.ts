@@ -21,17 +21,17 @@ export const initialTouchState: TouchDragState = {
 
 
 
-export const GAME_NUMBER = 16;
+export const GAME_NUMBER = 15;
 export const NUMBER_TO_LETTER: { [key: number]: string } = {
-  1: 'C', 2: 'L', 3: 'U', 4: 'B',
-  5: 'D', 6: 'E', 7: 'C', 8: 'K',
-  9: 'H', 10: 'A', 11: 'N', 12: 'D',
-  13: 'J', 14: 'A', 15: 'C', 16: 'K'
+  1: 'K', 2: 'E', 3: 'Y', 4: 'S',
+  5: 'P', 6: 'H', 7: 'O', 8: 'NE',
+  9: 'R', 10: 'EM', 11: 'O', 12: 'TE',
+  13: 'W', 14: 'AL', 15: 'LE', 16: 'T'
 };
 export const SCRAMBLE = [
-  [3, 15, 9, 12],
-  [7, 2, 13, 5],
-  [10, 14, 1, 16],
-  [8, 11, 6, 4],
+  [9, 13, 1, 10],
+  [16, 5, 6, 2],
+  [3, 8, 7, 14],
+  [11, 4, 15, 12],
 ];
-export const THEME = "Poker; what do you see?";
+export const THEME = "Where'd it go?";

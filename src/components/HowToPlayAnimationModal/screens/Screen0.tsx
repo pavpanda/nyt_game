@@ -13,7 +13,7 @@ const Screen0: React.FC<Screen0Props> = () => {
       <ul className={styles.bulletPoints}>
         <li>You are given a 4x4 grid of letters.</li>
         <li>You win by arranging four rows of themed words <strong>alphabetically</strong>.</li>
-        <li>Each word is four letters long.</li>
+        <li>Each word is at least four letters long.</li>
         <li>You have access to two operations: <strong>swaps</strong> and <strong>flips</strong>.</li>
         <ul className={styles.bulletPoints}>
           <li>You can swap rows or columns  by dragging.</li>
