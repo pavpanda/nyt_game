@@ -25,7 +25,7 @@ export const GAME_NUMBER = 22;
 export const NUMBER_TO_LETTER: { [key: number]: string } = {
   1: 'F', 2: 'L', 3: 'E', 4: 'A',
   5: 'L', 6: 'I', 7: 'C', 8: 'E',
-  9: 'L', 10: 'I', 11: 'C', 12: 'E',
+  9: 'M', 10: 'O', 11: 'T', 12: 'H',
   13: 'W', 14: 'A', 15: 'S', 16: 'P'
 };
 export const SCRAMBLE = [
