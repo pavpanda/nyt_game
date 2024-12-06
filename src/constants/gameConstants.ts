@@ -21,18 +21,18 @@ export const initialTouchState: TouchDragState = {
 
 
 
-export const GAME_NUMBER = 24;
+export const GAME_NUMBER = 25;
 export const NUMBER_TO_LETTER: { [key: number]: string } = {
-  1: 'S', 2: 'L', 3: 'O', 4: 'W',
-  5: 'S', 6: 'T', 7: 'O', 8: 'P',
-  9: 'X', 10: 'I', 11: 'N', 12: 'G',
-  13: 'Z', 14: 'O', 15: 'N', 16: 'E'
+  1: 'B', 2: 'U', 3: 'R', 4: 'Y',
+  5: 'H', 6: 'I', 7: 'D', 8: 'E',
+  9: 'M', 10: 'A', 11: 'S', 12: 'K',
+  13: 'V', 14: 'E', 15: 'I', 16: 'L'
 };
 export const SCRAMBLE = [
-  [13, 15, 3, 10],
-  [1, 12, 4, 14],
-  [8, 16, 9, 6],
-  [7, 11, 2, 5],
+  [13, 11, 3, 10],
+  [1, 16, 4, 14],
+  [8, 12, 9, 6],
+  [5, 2, 15, 7],
 ];
 
-export const THEME = "Road sign contents!";
+export const THEME = "Quick, out of sight!";
