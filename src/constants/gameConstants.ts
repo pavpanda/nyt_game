@@ -30,8 +30,8 @@ export const NUMBER_TO_LETTER: { [key: number]: string } = {
 };
 export const SCRAMBLE = [
   [12, 15, 9, 11],
-  [4, 3, 10, 7],
-  [13, 14, 8, 16],
+  [4, 3, 8, 7],
+  [13, 14, 10, 16],
   [2, 5, 1, 6],
 ];
 
