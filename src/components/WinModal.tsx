@@ -107,7 +107,7 @@ const WinModal: React.FC<WinModalProps> = ({
       toast.success('Copied to clipboard!');
     } catch (err) {
       console.error('Failed to copy:', err);
-      toast.error('Failed to copy to clipboard');
+      // toast.error('Failed to copy to clipboard');
     }
 
     // If available, open native share sheet
