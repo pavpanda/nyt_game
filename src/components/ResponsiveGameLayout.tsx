@@ -11,6 +11,9 @@ import HowToPlayAnimationModal from './HowToPlayAnimationModal/HowToPlayAnimatio
 import { FlipButton } from './FlipButton';
 import EasyModeToggle from './EasyModeToggle';
 
+// The new Leaderboard Modal
+import LeaderboardModal from './LeaderboardModal';
+
 const EASY_MODE_KEY = 'easyMode';
 
 interface ResponsiveGameLayoutProps {
@@ -27,6 +30,9 @@ interface ResponsiveGameLayoutProps {
   showWinModal: boolean;
   onCloseWinModal: () => void;
   solution: Grid;
+
+  // Single active branch from GameBoard
+  currentBranch?: string;
 }
 
 interface DragState {
@@ -51,13 +57,14 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
   setMoveCount,
   showWinModal,
   onCloseWinModal,
-  solution
+  solution,
+  currentBranch, // new
 }) => {
   const [easyMode, setEasyMode] = useState<boolean>(() => {
     const savedEasyMode = localStorage.getItem(EASY_MODE_KEY);
     return savedEasyMode ? JSON.parse(savedEasyMode) : true;
   });
-  
+
   const [headerHeight, setHeaderHeight] = useState(0);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
@@ -67,12 +74,8 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
   };
 
   const gridRef = useRef<HTMLDivElement>(null);
-
   const gapSize = 2;
-
-  const [adjustedCellSize, setAdjustedCellSize] = useState<number>(
-    CELL_SIZE.desktop
-  );
+  const [adjustedCellSize, setAdjustedCellSize] = useState<number>(CELL_SIZE.desktop);
 
   const [flippingRows, setFlippingRows] = useState<Set<number>>(new Set());
   const [flippingCols, setFlippingCols] = useState<Set<number>>(new Set());
@@ -90,41 +93,12 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
     gapSize
   );
 
+  // For controlling the Leaderboard Modal
+  const [showLeaderboardModal, setShowLeaderboardModal] = useState(false);
+
   useEffect(() => {
     localStorage.setItem(EASY_MODE_KEY, JSON.stringify(easyMode));
   }, [easyMode]);
-
-  const handleFlip = (index: number, type: 'row' | 'col') => {
-    onFlip(index, type);
-
-    if (type === 'row') {
-      setFlippingRows((prev) => {
-        const newSet = new Set(prev);
-        newSet.add(index);
-        return newSet;
-      });
-      setTimeout(() => {
-        setFlippingRows((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(index);
-          return newSet;
-        });
-      }, FLIP_DURATION);
-    } else if (type === 'col') {
-      setFlippingCols((prev) => {
-        const newSet = new Set(prev);
-        newSet.add(index);
-        return newSet;
-      });
-      setTimeout(() => {
-        setFlippingCols((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(index);
-          return newSet;
-        });
-      }, FLIP_DURATION);
-    }
-  };
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -143,8 +117,7 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
       const baseHeaderHeight = vw < 768 ? 80 : 160;
 
       const widthScale = availableWidth / (baseGridSize + 60);
-      const heightScale =
-        (availableHeight - baseHeaderHeight) / (baseGridSize + 60);
+      const heightScale = (availableHeight - baseHeaderHeight) / (baseGridSize + 60);
 
       const newScale = Math.min(widthScale, heightScale, 1);
 
@@ -160,26 +133,56 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
     return () => window.removeEventListener('resize', updateDimensions);
   }, []);
 
+  const handleFlipInternal = (index: number, type: 'row' | 'col') => {
+    onFlip(index, type);
+
+    if (type === 'row') {
+      setFlippingRows((prev) => {
+        const newSet = new Set(prev);
+        newSet.add(index);
+        return newSet;
+      });
+      setTimeout(() => {
+        setFlippingRows((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(index);
+          return newSet;
+        });
+      }, FLIP_DURATION);
+    } else {
+      setFlippingCols((prev) => {
+        const newSet = new Set(prev);
+        newSet.add(index);
+        return newSet;
+      });
+      setTimeout(() => {
+        setFlippingCols((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(index);
+          return newSet;
+        });
+      }, FLIP_DURATION);
+    }
+  };
+
   const getTransformStyle = (rowIndex: number, colIndex: number): React.CSSProperties => {
     const { isDragging, direction, dragOffset, sourceRow, sourceCol, targetIndex } = dragState;
-  
     if (!isDragging || targetIndex === undefined) return {};
-  
+
     const cellDistance = adjustedCellSize + gapSize;
     let transform = '';
     let zIndex = 0;
-    // Only apply transition when NOT actively dragging
     let transition = isDragging ? 'none' : 'transform 0.2s ease-out';
-  
+
+    // If row is frozen, no transform
     if (frozenRows.has(rowIndex)) {
       return {};
     }
-  
+
     if (direction === 'vertical' && sourceRow !== null && targetIndex !== null) {
       if (frozenRows.has(sourceRow) || frozenRows.has(targetIndex)) {
         return {};
       }
-  
       if (rowIndex === sourceRow) {
         transform = `translateY(${dragOffset.y}px)`;
         zIndex = 10;
@@ -188,13 +191,10 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
         transform = `translateY(${offsetY}px)`;
         zIndex = 5;
       }
-    }
-  
-    if (direction === 'horizontal' && sourceCol !== undefined && targetIndex !== undefined) {
+    } else if (direction === 'horizontal' && sourceCol !== undefined && targetIndex !== undefined) {
       if (frozenRows.has(rowIndex)) {
         return {};
       }
-  
       if (colIndex === sourceCol) {
         transform = `translateX(${dragOffset.x}px)`;
         zIndex = 10;
@@ -204,7 +204,7 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
         zIndex = 5;
       }
     }
-  
+
     return {
       transform,
       zIndex,
@@ -212,17 +212,18 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
     };
   };
 
+  // Render
   return (
     <div className="flex flex-col items-center justify-center min-h-screen w-full md:px-8">
+      {/* Header */}
       <div
-        style={{
-          height: headerHeight,
-        }}
+        style={{ height: headerHeight }}
         className="w-full flex justify-center mb-8 md:mb-24"
       >
         <GameHeader theme={THEME} onShowInstructions={onShowInstructions} />
       </div>
 
+      {/* Main puzzle area */}
       <div className="relative mt-32 md:mt-8 flex flex-col items-center justify-center">
         <div className="relative">
           {/* Column Flip Buttons */}
@@ -234,13 +235,10 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
             }}
           >
             {grid[0]?.map((_, colIndex) => (
-              <div
-                key={`col-flip-${colIndex}`}
-                className="flex justify-center"
-              >
+              <div key={`col-flip-${colIndex}`} className="flex justify-center">
                 <FlipButton
                   direction="col"
-                  onClick={() => handleFlip(colIndex, 'col')}
+                  onClick={() => handleFlipInternal(colIndex, 'col')}
                   disabled={false}
                 />
               </div>
@@ -250,9 +248,7 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
           {/* Row Flip Buttons */}
           <div
             className="absolute -left-6 top-0 bottom-0 flex flex-col"
-            style={{
-              gap: `${gapSize}px`,
-            }}
+            style={{ gap: `${gapSize}px` }}
           >
             {grid.map((_, rowIndex) => (
               <div
@@ -262,17 +258,17 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
               >
                 <FlipButton
                   direction="row"
-                  onClick={() => handleFlip(rowIndex, 'row')}
+                  onClick={() => handleFlipInternal(rowIndex, 'row')}
                   disabled={frozenRows.has(rowIndex)}
                 />
               </div>
             ))}
           </div>
 
-          {/* Main Grid */}
+          {/* Actual Grid */}
           <div
-            className="grid"
             ref={gridRef}
+            className="grid"
             style={{
               gridTemplateColumns: `repeat(${grid[0]?.length ?? 0}, ${adjustedCellSize}px)`,
               gridTemplateRows: `repeat(${grid.length}, ${adjustedCellSize}px)`,
@@ -281,23 +277,16 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
               perspective: '1000px',
             }}
             onMouseMove={(e) => {
-              if (dragState.isDragging) {
-                e.preventDefault();
-              }
+              if (dragState.isDragging) e.preventDefault();
             }}
             onTouchMove={(e) => {
-              if (dragState.isDragging) {
-                e.preventDefault();
-              }
+              if (dragState.isDragging) e.preventDefault();
             }}
           >
             {grid.map((row, rowIndex) =>
               row.map((cell, colIndex) => {
-                const isFlipping =
-                  flippingRows.has(rowIndex) || flippingCols.has(colIndex);
-                const flipType: 'row' | 'col' | undefined = flippingRows.has(
-                  rowIndex
-                )
+                const isFlipping = flippingRows.has(rowIndex) || flippingCols.has(colIndex);
+                const flipType: 'row' | 'col' | undefined = flippingRows.has(rowIndex)
                   ? 'row'
                   : flippingCols.has(colIndex)
                   ? 'col'
@@ -323,7 +312,7 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
                       isFrozenRow={frozenRows.has(rowIndex)}
                       isFirstRow={rowIndex === 0}
                       isFirstCol={colIndex === 0}
-                      onFlip={handleFlip}
+                      onFlip={handleFlipInternal}
                       onDragStart={handleDragStart}
                       dragState={dragState}
                       isFlipping={isFlipping}
@@ -340,18 +329,47 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
         </div>
       </div>
 
+      {/* Bottom bar: Stats, EasyMode, Leaderboard */}
       <div className="mt-4 flex flex-row items-center gap-6 mt-6 md:mt-6 justify-center w-full">
+        {/* Game Stats */}
         <div className="flex items-center">
           <GameStats moveCount={moveCount} completedRows={frozenRows.size} />
         </div>
-        <div className="h-8 w-px bg-gray-300 dark:bg-gray-700" /> {/* Added vertical divider */}
-        <div className="flex items-center">
-          <EasyModeToggle easyMode={easyMode} setEasyMode={setEasyMode} />
+
+        {/* Divider */}
+        <div className="h-8 w-px bg-gray-300 dark:bg-gray-700" />
+
+        {/* EasyMode Toggle and Leaderboard Button Container */}
+        <div className="flex flex-col items-center">
+          {/* Easy Mode Toggle */}
+          <div className="flex items-center">
+            <EasyModeToggle easyMode={easyMode} setEasyMode={setEasyMode} />
+          </div>
+
+          {/* Optional Divider for Desktop */}
+
+
+          {/* Leaderboard Button */}
+          {currentBranch && (
+            <button
+              onClick={() => setShowLeaderboardModal(true)}
+              className="mt-2 px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600"
+            >
+              Leaderboard
+            </button>
+          )}
         </div>
       </div>
 
-      {showInstructions && (
-        <HowToPlayAnimationModal onClose={onCloseInstructions} />
+      {/* Modals */}
+      {showInstructions && <HowToPlayAnimationModal onClose={onCloseInstructions} />}
+
+      {/* Leaderboard Modal */}
+      {showLeaderboardModal && currentBranch && (
+        <LeaderboardModal
+          branchId={currentBranch}
+          onClose={() => setShowLeaderboardModal(false)}
+        />
       )}
     </div>
   );

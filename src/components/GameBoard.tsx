@@ -1,5 +1,15 @@
 // GameBoard.tsx
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  arrayUnion
+} from 'firebase/firestore';
+
 import { Grid } from '../types/types';
 import { SOLUTION, NUMBER_TO_LETTER, SCRAMBLE, GAME_NUMBER } from '../constants/gameConstants';
 import { useGridOperations } from '../hooks/useGridOperations';
@@ -11,6 +21,10 @@ const LOCAL_STORAGE_KEY = 'gameState';
 const HOW_TO_PLAY_SEEN_KEY = 'howToPlaySeen';
 const GAME_NUMBER_KEY = 'gameNumber';
 
+// SINGLE-BRANCH KEYS
+const ACTIVE_BRANCH_KEY = 'activeBranch';
+const PENDING_SCORE_KEY = 'pendingScore';
+
 interface SavedGameState {
   grid: Grid;
   moveCount: number;
@@ -20,49 +34,49 @@ interface SavedGameState {
 }
 
 export const GameBoard: React.FC = () => {
-  // Function to load the initial game state
+  const { branchId: routeBranchId } = useParams<string>();
+  const db = getFirestore();
+
+  // If we have a branch in the URL, that overrides any stored branch.
+  // Otherwise, fall back to what's in localStorage, or blank if none.
+  const storedActiveBranch = localStorage.getItem(ACTIVE_BRANCH_KEY) || '';
+  const activeBranch = routeBranchId || storedActiveBranch;
+
+  // If route changes, overwrite the localStorage with the new route-based branch.
+  useEffect(() => {
+    if (routeBranchId) {
+      localStorage.setItem(ACTIVE_BRANCH_KEY, routeBranchId);
+    }
+  }, [routeBranchId]);
+
+  // Function to load the initial game state from localStorage
   const loadInitialState = (): SavedGameState | null => {
     const storedGameNumber = localStorage.getItem(GAME_NUMBER_KEY);
-    // console.log(`Stored Game Number: ${storedGameNumber}`);
-    // console.log(`Current GAME_NUMBER: ${GAME_NUMBER}`);
-
-    // Check if the stored game number matches the current GAME_NUMBER
     if (storedGameNumber !== GAME_NUMBER.toString()) {
-      // console.log('Game number mismatch. Resetting game state.');
-
-      // Remove specific keys instead of clearing entire localStorage
       localStorage.removeItem(LOCAL_STORAGE_KEY);
       localStorage.removeItem(HOW_TO_PLAY_SEEN_KEY);
-      
-      // Update the GAME_NUMBER in localStorage
       localStorage.setItem(GAME_NUMBER_KEY, GAME_NUMBER.toString());
-
-      return null; // Return null to initialize with default values
+      return null;
     }
-
-    // Retrieve the saved game state
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (saved) {
       try {
-        const parsed: SavedGameState = JSON.parse(saved);
-        // console.log('Loaded saved game state:', parsed);
-        return parsed;
+        return JSON.parse(saved) as SavedGameState;
       } catch (error) {
         console.error('Error parsing saved game state:', error);
         return null;
       }
     }
-
-    // If no saved state exists
     return null;
   };
 
-  // Initialize state variables
   const initialState = loadInitialState();
 
   const [grid, setGrid] = useState<Grid>(() => initialState?.grid || SCRAMBLE);
   const [moveCount, setMoveCount] = useState<number>(() => initialState?.moveCount || 0);
-  const [frozenRows, setFrozenRows] = useState<Set<number>>(() => new Set(initialState?.frozenRows || []));
+  const [frozenRows, setFrozenRows] = useState<Set<number>>(
+    () => new Set(initialState?.frozenRows || [])
+  );
   const [solvedRowsOrder, setSolvedRowsOrder] = useState<Map<number, number>>(() => {
     const map = new Map<number, number>();
     initialState?.solvedRowsOrder.forEach(([key, value]) => map.set(key, value));
@@ -75,14 +89,9 @@ export const GameBoard: React.FC = () => {
   );
   const [showHowToPlayAnimation, setShowHowToPlayAnimation] = useState<boolean>(false);
 
-  const { handleFlip } = useGridOperations(
-    grid,
-    frozenRows,
-    setGrid,
-    setMoveCount
-  );
+  const { handleFlip } = useGridOperations(grid, frozenRows, setGrid, setMoveCount);
 
-  // Effect to save game state to localStorage whenever relevant state changes
+  // Save game state whenever relevant changes occur
   useEffect(() => {
     const savedState: SavedGameState = {
       grid,
@@ -92,10 +101,9 @@ export const GameBoard: React.FC = () => {
       solvedRowsHistory,
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(savedState));
-    // console.log('Game state saved:', savedState);
   }, [grid, moveCount, frozenRows, solvedRowsOrder, solvedRowsHistory]);
 
-  // Effect to update frozen rows based on correctness
+  // Check correctness of rows
   useEffect(() => {
     setFrozenRows((prev) => {
       const newFrozen = new Set<number>();
@@ -107,12 +115,8 @@ export const GameBoard: React.FC = () => {
         if (isCorrect) {
           newFrozen.add(index);
           if (!prev.has(index)) {
-            setSolvedRowsHistory((current) => ({
-              ...current,
-              [index]: moveCount,
-            }));
-            setSolvedRowsOrder((current) => new Map(current).set(index, moveCount));
-            // console.log(`Row ${index} solved in ${moveCount} moves.`);
+            setSolvedRowsHistory((curr) => ({ ...curr, [index]: moveCount }));
+            setSolvedRowsOrder((curr) => new Map(curr).set(index, moveCount));
           }
         }
       });
@@ -120,23 +124,43 @@ export const GameBoard: React.FC = () => {
     });
   }, [grid, moveCount]);
 
-  // Effect to show win modal if all rows are frozen
+  // If puzzle is solved, show Win Modal
   useEffect(() => {
-    if (Object.keys(solvedRowsHistory).length > 0 && frozenRows.size === grid.length) {
-      // console.log('All rows solved. Showing win modal.');
+    if (frozenRows.size === grid.length && Object.keys(solvedRowsHistory).length > 0) {
       setShowWinModal(true);
+      localStorage.setItem(PENDING_SCORE_KEY, moveCount.toString());
     }
-  }, [frozenRows, solvedRowsHistory, grid.length]);
+  }, [frozenRows, solvedRowsHistory, grid.length, moveCount]);
 
-  // Effect to show How To Play animation if not seen
+  // Show how-to-play animation if not seen
   useEffect(() => {
     const hasSeen = localStorage.getItem(HOW_TO_PLAY_SEEN_KEY);
     if (!hasSeen) {
-      // console.log('Showing How To Play animation.');
       setShowHowToPlayAnimation(true);
       localStorage.setItem(HOW_TO_PLAY_SEEN_KEY, 'true');
     }
   }, []);
+
+  // Helper: Submit a score to a specific branch
+  const submitScoreToBranch = async (branch: string, nickname: string, moves: number) => {
+    if (!branch) return;
+    const docRef = doc(db, 'scores', branch);
+    const snapshot = await getDoc(docRef);
+
+    if (!snapshot.exists()) {
+      await setDoc(docRef, {
+        scores: [{ nickname, moves, date: new Date().toISOString() }],
+      });
+    } else {
+      await updateDoc(docRef, {
+        scores: arrayUnion({
+          nickname,
+          moves,
+          date: new Date().toISOString(),
+        }),
+      });
+    }
+  };
 
   return (
     <>
@@ -155,14 +179,20 @@ export const GameBoard: React.FC = () => {
           showWinModal={showWinModal}
           onCloseWinModal={() => setShowWinModal(false)}
           solution={SOLUTION}
+          // Pass the single active branch to the layout
+          currentBranch={activeBranch || undefined}
         />
       </div>
+
       {showWinModal && (
         <WinModal
           onClose={() => setShowWinModal(false)}
           solvedRowsHistory={solvedRowsHistory}
+          currentBranch={activeBranch || undefined}
+          onSubmitScoreToBranch={submitScoreToBranch}
         />
       )}
+
       {showHowToPlayAnimation && (
         <HowToPlayAnimationModal onClose={() => setShowHowToPlayAnimation(false)} />
       )}
