@@ -88,12 +88,14 @@ const WinModal: React.FC<WinModalProps> = ({
         // Overwrite local storage with new branch
         localStorage.setItem(ACTIVE_BRANCH_KEY, finalNewBranchId);
 
-        finalBranchLink = `https://flipisfun.com/${finalNewBranchId}`;
+        finalBranchLink = LINK + `/#/${finalNewBranchId}`;
       }
     }
     // Otherwise, if we have a current branch
     else if (currentBranch) {
-      finalBranchLink = `https://flipisfun.com/${currentBranch}`;
+      finalBranchLink = LINK + `/#/${currentBranch}`;
+    } else {
+      finalBranchLink = LINK;
     }
 
     // Now build text with or without link
