@@ -20,18 +20,18 @@ export const initialTouchState: TouchDragState = {
 };
 
 
-export const GAME_NUMBER = 43;
+export const GAME_NUMBER = 45;
 export const NUMBER_TO_LETTER: { [key: number]: string } = {
-  1: 'G', 2: 'A', 3: 'Z', 4: 'E',
-  5: 'O', 6: 'P', 7: 'E', 8: 'N',
-  9: 'R', 10: 'O', 11: 'L', 12: 'L',
-  13: 'W', 14: 'I', 15: 'N', 16: 'K'
+  1: 'I', 2: 'R', 3: 'O', 4: 'N',
+  5: 'L', 6: 'E', 7: 'A', 8: 'D',
+  9: 'N', 10: 'E', 11: 'O', 12: 'N',
+  13: 'Z', 14: 'I', 15: 'N', 16: 'C'
 };
 export const SCRAMBLE = [
-  [16, 4, 1, 11],
+  [11, 4, 1, 16],
   [3, 14, 7, 8],
   [10, 13, 2, 6],
   [12, 9, 15, 5],
 ];
 
-export const THEME = "👀";
+export const THEME = "Alchemist's Lexicon";
