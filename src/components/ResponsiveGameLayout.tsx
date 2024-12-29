@@ -13,6 +13,8 @@ import EasyModeToggle from './EasyModeToggle';
 
 // The new Leaderboard Modal
 import LeaderboardModal from './LeaderboardModal';
+import InfoTooltip from './InfoToolTip';
+
 
 const EASY_MODE_KEY = 'easyMode';
 
@@ -344,6 +346,10 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
           {/* Easy Mode Toggle */}
           <div className="flex items-center">
             <EasyModeToggle easyMode={easyMode} setEasyMode={setEasyMode} />
+            <InfoTooltip 
+                tooltipText="When easy mode is on, words that are correct but in the wrong row will turn gray!"
+                ariaLabel="Easy mode information"
+              />
           </div>
 
           {/* Optional Divider for Desktop */}
@@ -351,12 +357,19 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
 
           {/* Leaderboard Button */}
           {currentBranch && (
-            <button
-              onClick={() => setShowLeaderboardModal(true)}
-              className="mt-2 px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600"
-            >
-              Leaderboard
-            </button>
+            <div className="flex items-center mt-2">
+              <button
+                onClick={() => setShowLeaderboardModal(true)}
+                className="text-blue-500 hover:text-blue-600"
+              >
+                Leaderboard
+              </button>
+              {/* Info Tooltip for Leaderboard */}
+              <InfoTooltip 
+                tooltipText="View the leaderboard to see top players in your room (not globally)!"
+                ariaLabel="Leaderboard information"
+              />
+            </div>
           )}
         </div>
       </div>

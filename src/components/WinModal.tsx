@@ -4,6 +4,7 @@ import NextFlipTimer from './NextFlipTimer';
 import { GAME_NUMBER, LINK, THEME } from '../constants/gameConstants';
 import { Share } from 'lucide-react';
 import toast from 'react-hot-toast';
+import InfoTooltip from './InfoToolTip';
 
 const NICKNAME_STORAGE_KEY = 'playerNickname';
 const PENDING_SCORE_KEY = 'pendingScore';
@@ -185,6 +186,10 @@ const WinModal: React.FC<WinModalProps> = ({
           <label htmlFor="createBranch" className="font-semibold">
             Create New Group
           </label>
+          <InfoTooltip
+            tooltipText="Creates a new link you can send to people whose scores you want to see! Otherwise, Flip will share the link you are currently using!"
+            ariaLabel="Leaderboard information"
+          />
         </div>
 
         {/* Buttons */}
