@@ -1,6 +1,6 @@
 import { Grid, TouchDragState } from '../types/types';
 
-export const LINK = "www.flipisfun.com";
+export const LINK = "https://flipisfun.com";
 export const NUM_ROWS = 4;
 export const SOLUTION: Grid = [
   [1, 2, 3, 4],
