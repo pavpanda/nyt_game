@@ -362,7 +362,7 @@ const ResponsiveGameLayout: React.FC<ResponsiveGameLayoutProps> = ({
                 onClick={() => setShowLeaderboardModal(true)}
                 className="text-blue-500 hover:text-blue-600"
               >
-                Leaderboard
+                Room Leaderboard
               </button>
               {/* Info Tooltip for Leaderboard */}
               <InfoTooltip 
