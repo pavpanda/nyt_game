@@ -64,7 +64,7 @@ const WinModal: React.FC<WinModalProps> = ({
   // Decide which branch link to share (if any)
   const getShareText = (branchLink: string | null) => {
     const linkLine = branchLink ? `\n${branchLink}\n` : '';
-    return `Flip #${GAME_NUMBER}${linkLine}\nDaily @ 9 am ET!\nTheme: ${THEME}\nTotal Moves: ${totalMoves}\n\n${visualizationString}`;
+    return `Flip #${GAME_NUMBER}${linkLine}\nDaily @ 12 pm ET!\nTheme: ${THEME}\nTotal Moves: ${totalMoves}\n\n${visualizationString}`;
   };
 
   // Check if Web Share API is available
