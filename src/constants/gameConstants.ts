@@ -20,7 +20,7 @@ export const initialTouchState: TouchDragState = {
 };
 
 
-export const GAME_NUMBER = 52;
+export const GAME_NUMBER = 53;
 export const NUMBER_TO_LETTER: { [key: number]: string } = {
   1: 'A', 2: 'U', 3: 'D', 4: 'I',
   5: 'B', 6: 'E', 7: 'N', 8: 'Z',
