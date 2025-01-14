@@ -20,18 +20,18 @@ export const initialTouchState: TouchDragState = {
 };
 
 
-export const GAME_NUMBER = 62;
+export const GAME_NUMBER = 63;
 export const NUMBER_TO_LETTER: { [key: number]: string } = {
-  1: 'C', 2: 'O', 3: 'R', 4: 'D',
-  5: 'H', 6: 'A', 7: 'I', 8: 'R',
-  9: 'R', 10: 'O', 11: 'P', 12: 'E',
-  13: 'W', 14: 'I', 15: 'R', 16: 'E'
+  1: 'P', 2: 'E', 3: 'A', 4: 'K',
+  5: 'R', 6: 'O', 7: 'C', 8: 'K',
+  9: 'T', 10: 'R', 11: 'E', 12: 'E',
+  13: 'W', 14: 'A', 15: 'L', 16: 'L'
 };
 export const SCRAMBLE = [
-  [3, 12, 6, 1],
-  [13, 14, 10, 8],
+  [3, 6, 12, 1],
+  [13, 5, 10, 8],
   [9, 11, 16, 4],
-  [7, 5, 2, 15],
+  [7, 14, 2, 15],
 ];
 
-export const THEME = "Tangled";
+export const THEME = "Climbing";
