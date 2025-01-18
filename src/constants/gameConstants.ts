@@ -20,18 +20,18 @@ export const initialTouchState: TouchDragState = {
 };
 
 
-export const GAME_NUMBER = 65;
+export const GAME_NUMBER = 66;
 export const NUMBER_TO_LETTER: { [key: number]: string } = {
-  1: 'B', 2: 'OO', 3: 'T', 4: 'H',
-  5: 'CZ', 6: 'OL', 7: 'GO', 8: 'SZ',
-  9: 'GU', 10: 'IT', 11: 'EA', 12: 'U',
-  13: 'O', 14: 'SW', 15: 'AL', 16: 'D'
+  1: 'C', 2: 'HR', 3: 'O', 4: 'ME',
+  5: 'E', 6: 'D', 7: 'G', 8: 'E',
+  9: 'FI', 10: 'RE', 11: 'FO', 12: 'X',
+  13: 'S', 14: 'AF', 15: 'AR', 16: 'I'
 };
 export const SCRAMBLE = [
-  [6, 2, 3, 12],
-  [11, 5, 10, 9],
-  [8, 13, 16, 4],
-  [7, 14, 1, 15],
+  [6, 2, 3, 9],
+  [11, 5, 16, 12],
+  [8, 14, 10, 4],
+  [7, 13, 1, 15],
 ];
 
-export const THEME = "Exec. Eliminators";
+export const THEME = "Search";
