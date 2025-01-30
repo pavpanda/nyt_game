@@ -34,4 +34,4 @@ export const SCRAMBLE = [
   [7, 13, 1, 4],
 ];
 
-export const THEME = "Rise";
+export const THEME = "Go up";
