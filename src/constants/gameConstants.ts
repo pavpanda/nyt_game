@@ -20,20 +20,20 @@ export const initialTouchState: TouchDragState = {
 };
 
 
-export const GAME_NUMBER = 88;
+export const GAME_NUMBER = 89;
 export const NUMBER_TO_LETTER: { [key: number]: string } = {
-  1: 'E', 2: 'P', 3: 'I', 4: 'C',
-  5: 'M', 6: 'Y', 7: 'T', 8: 'H',
-  9: 'S', 10: 'A', 11: 'G', 12: 'A',
-  13: 'T', 14: 'A', 15: 'L', 16: 'E'
+  1: 'P', 2: 'U', 3: 'KK', 4: 'A',
+  5: 'R', 6: 'E', 7: 'A', 8: 'L',
+  9: 'T', 10: 'R', 11: 'U', 12: 'E',
+  13: 'VA', 14: 'L', 15: 'I', 16: 'D'
 };
 export const SCRAMBLE = [
   [6, 10, 3, 9],
-  [11, 2, 16, 12],
+  [11, 2, 12, 16],
   [8, 4, 5, 15],
   [7, 14, 1, 13],
 ];
 
-export const THEME = "Story";
+export const THEME = "Genuine";
 
-//epic myth sage tale  
+//   pukka real true valid
