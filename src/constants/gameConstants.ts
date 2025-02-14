@@ -20,20 +20,18 @@ export const initialTouchState: TouchDragState = {
 };
 
 
-export const GAME_NUMBER = 89;
+export const GAME_NUMBER = 90;
 export const NUMBER_TO_LETTER: { [key: number]: string } = {
-  1: 'P', 2: 'U', 3: 'KK', 4: 'A',
-  5: 'R', 6: 'E', 7: 'A', 8: 'L',
-  9: 'T', 10: 'R', 11: 'U', 12: 'E',
-  13: 'VA', 14: 'L', 15: 'I', 16: 'D'
+  1: 'BE', 2: 'LO', 3: 'VE', 4: 'D',
+  5: 'C', 6: 'A', 7: 'R', 8: 'E',
+  9: 'L', 10: 'O', 11: 'V', 12: 'E',
+  13: 'W', 14: 'A', 15: 'RM', 16: 'TH'
 };
 export const SCRAMBLE = [
-  [6, 10, 3, 9],
+  [6, 10, 9, 3],
   [11, 2, 12, 16],
   [8, 4, 5, 15],
   [7, 14, 1, 13],
 ];
 
-export const THEME = "Genuine";
-
-//   pukka real true valid
+export const THEME = "Valentine";
