@@ -20,12 +20,12 @@ export const initialTouchState: TouchDragState = {
 };
 
 
-export const GAME_NUMBER = 100;
+export const GAME_NUMBER = 101;
 export const NUMBER_TO_LETTER: { [key: number]: string } = {
-  1: 'BE', 2: 'A', 3: 'VE', 4: 'R',
-  5: 'CA', 6: 'M', 7: 'E', 8: 'L',
-  9: 'M', 10: 'OO', 11: 'S', 12: 'E',
-  13: 'TU', 14: 'R', 15: 'T', 16: 'LE'  
+  1: 'GL', 2: 'O', 3: 'VE', 4: 'S',
+  5: 'SH', 6: 'OV', 7: 'E', 8: 'L',
+  9: 'TR', 10: 'O', 11: 'WE', 12: 'L',
+  13: 'WEE', 14: 'D', 15: 'E', 16: 'R'  
 };
 export const SCRAMBLE = [
   [10, 6, 3, 9],
@@ -34,4 +34,4 @@ export const SCRAMBLE = [
   [7, 14, 1, 13],
 ];
 
-export const THEME = "Eating Plants";
+export const THEME = "Gardener's Essentials";
