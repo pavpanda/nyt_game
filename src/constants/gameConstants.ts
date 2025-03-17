@@ -20,12 +20,12 @@ export const initialTouchState: TouchDragState = {
 };
 
 
-export const GAME_NUMBER = 105;
+export const GAME_NUMBER = 106;
 export const NUMBER_TO_LETTER: { [key: number]: string } = {
-  1: 'CL', 2: 'OV', 3: 'E', 4: 'R',
-  5: 'G', 6: 'RE', 7: 'E', 8: 'N',
-  9: 'L', 10: 'U', 11: 'C', 12: 'K',
-  13: 'PA', 14: 'RA', 15: 'D', 16: 'E'  
+  1: 'L', 2: 'I', 3: 'F', 4: 'T',
+  5: 'S', 6: 'W', 7: 'I', 8: 'M',
+  9: 'W', 10: 'A', 11: 'L', 12: 'K',
+  13: 'Y', 14: 'O', 15: 'G', 16: 'A'  
 };
 export const SCRAMBLE = [
   [10, 6, 9, 3],
@@ -34,4 +34,4 @@ export const SCRAMBLE = [
   [7, 14, 1, 13],
 ];
 
-export const THEME = "St. Patrick's";
+export const THEME = "Stay fit";
